@@ -1,6 +1,7 @@
 package ui;
 
 import application.Food;
+import application.SQLConnector;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.ListView;
@@ -17,6 +18,29 @@ public class MainMenuController {
 		//Nacitanie listu
 		menuListView.setCellFactory(l ->new FoodItemCell());
 		addItemsToList();		
+			
+		//Len na testovanie zatial
+		SQLConnector connector = new SQLConnector();
+		connector.connectToDB();
+		
+		if(connector.isConnectedToDB())
+		{
+			connector.addUserToDB("D.M.", "Bla bla BA", "Ahoj123", "dm@gmail.com");		
+			int id = connector.getUserInDB("dm@gmail.com", "Ahoj123");		
+			if(id>0)
+			{
+				System.out.println("User found");
+			}
+			else 
+			{
+				System.out.println("User not found");
+			}
+			connector.closeConnection();
+		}
+		else 
+		{
+			System.out.println("Not connected");
+		}
 	}
 	
 	//Debug function - prida nahodne veci do listu
