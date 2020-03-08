@@ -1,7 +1,5 @@
 package ui;
 
-import javafx.stage.Modality;
-
 public class RegistrationScreenController {
 
 	//Nezabudnut pridat 		

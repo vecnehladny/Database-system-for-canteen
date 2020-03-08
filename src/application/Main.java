@@ -18,8 +18,6 @@ public class Main extends Application {
 			Parent root = FXMLLoader.load(getClass().getResource("/ui/LoginScreen.fxml"));
 			Scene scene = new Scene(root);
 			primaryStage.setScene(scene);
-			//primaryStage.setMinHeight(450);
-			//primaryStage.setMinWidth(500);
 			primaryStage.setResizable(false);
 			primaryStage.setTitle(LOGIN_STRING);
 			primaryStage.show();
