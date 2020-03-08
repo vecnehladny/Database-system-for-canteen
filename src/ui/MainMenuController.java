@@ -16,8 +16,7 @@ public class MainMenuController {
 	{
 		//Nacitanie listu
 		menuListView.setCellFactory(l ->new FoodItemCell());
-		addItemsToList();
-		
+		addItemsToList();		
 	}
 	
 	//Debug function - prida nahodne veci do listu
