@@ -61,7 +61,7 @@ public class SQLConnector {
             preparedStatement.setBoolean(5, false);
             preparedStatement.executeUpdate();
 
-            System.out.println("User "+email+" added.");
+            System.out.println("User: "+email+" passw: "+password+" added.");
         } catch (SQLException e) {
             System.out.println("Problem with adding user, check logs");
             e.printStackTrace();

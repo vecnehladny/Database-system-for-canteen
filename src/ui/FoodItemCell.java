@@ -11,6 +11,7 @@ import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.ListCell;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
@@ -69,7 +70,7 @@ public class FoodItemCell extends ListCell<Food> {
 	{
 		try {
 			FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/ItemDetailScreen.fxml"));	
-			Parent root = loader.load();
+			VBox root = (VBox) loader.load();
 			Scene scene = new Scene(root);		
 			Stage stage = new Stage();
 			
