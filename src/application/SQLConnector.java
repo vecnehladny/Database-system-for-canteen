@@ -8,7 +8,7 @@ public class SQLConnector {
     private Statement statement = null;
     private PreparedStatement preparedStatement = null;
     private ResultSet resultSet = null;
-
+    
     //Nacitanie drivera a pripojenie k databaze
     public void connectToDB()
     {
@@ -34,9 +34,103 @@ public class SQLConnector {
         //Debug If, neskor zmazat
         if (connection != null) {
             System.out.println("Connection established");
+            checkDBTables();
         } else {
             System.out.println("Failed to make connection!");
         }
+    }
+    
+    private void checkDBTables()
+    {
+    	//Zistovanie, ci ma databaza vytvorene tabulky. Ak nema, tak ich vytvori.
+    	DatabaseMetaData databaseMetaData;
+		try {
+			databaseMetaData = connection.getMetaData();
+	    	ResultSet rSet = databaseMetaData.getTables(null, null, "%", null);
+	    	
+	    	//Ak je tabulka uplne prazdna
+	    	if(!rSet.next())
+	    	{
+	    		SQLTableCreator.createChefs(connection);
+	    		SQLTableCreator.createFood(connection);
+	    		SQLTableCreator.createFoodChef(connection);
+	    		SQLTableCreator.createFoodIngredients(connection);
+	    		SQLTableCreator.createIngredients(connection);
+	    		SQLTableCreator.createItems(connection);
+	    		SQLTableCreator.createOrders(connection);
+	    		SQLTableCreator.createUsers(connection);
+	    		return;
+	    	}
+	    	
+	    	//Kontrola, ci nechyba iba nejaka tabulka
+	    	if(!rSet.getString(3).equals("chefs")){
+	    		SQLTableCreator.createChefs(connection);
+	    	}
+	    	else {
+	    		resultNext(rSet);
+	    	}
+	    	
+	    	if(!rSet.getString(3).equals("food")){
+	    		SQLTableCreator.createFood(connection);
+	    	}
+	    	else {
+	    		resultNext(rSet);
+	    	}
+	    	
+	    	if(!rSet.getString(3).equals("food_chef")){
+	    		SQLTableCreator.createFoodChef(connection);
+	    	}
+	    	else {
+	    		resultNext(rSet);
+	    	}
+	    	
+	    	if(!rSet.getString(3).equals("food_ingredients")){
+	    		SQLTableCreator.createFoodIngredients(connection);
+	    	}	  
+	    	else {
+	    		resultNext(rSet);
+	    	}
+	    	
+	    	if(!rSet.getString(3).equals("ingredients")){
+	    		SQLTableCreator.createIngredients(connection);
+	    	}	  
+	    	else {
+	    		resultNext(rSet);
+	    	}
+	    	
+	    	if(!rSet.getString(3).equals("items")){
+	    		SQLTableCreator.createItems(connection);
+	    	}
+	    	else {    	
+	    		resultNext(rSet);
+	    	}
+	    	
+	    	if(!rSet.getString(3).equals("orders")){
+	    		SQLTableCreator.createOrders(connection);
+	    	}	    	
+	    	else {
+	    		resultNext(rSet);
+	    	}
+	    	
+	    	if(!rSet.getString(3).equals("users")){
+	    		SQLTableCreator.createUsers(connection);
+	    	}   	
+
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    }
+    
+    private void resultNext(ResultSet rs)
+    {
+    	try {
+    		if(!rs.isLast())
+    			rs.next();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
     }
 
     //Skontroluje, ci sme pripojeny k databaze
