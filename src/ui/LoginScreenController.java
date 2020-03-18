@@ -3,11 +3,13 @@ package ui;
 import java.io.IOException;
 
 import application.SQLConnector;
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
@@ -27,13 +29,13 @@ public class LoginScreenController {
 	String MAIN_MENU_TITLE = "Main Menu";
 	
 	public void logInButtonPressed(ActionEvent event)
-	{
+	{		
 		System.out.println("Log in button pressed");
 		
 		//Kontrola prazdnych poli
 		if(passwordField.getText().isEmpty() || emailField.getText().isEmpty())
 		{
-			System.out.println("Please enter your email and password");
+			showAlertBox("Please enter your email and password");
 			return;
 		}
 		
@@ -45,7 +47,7 @@ public class LoginScreenController {
 			int id = connector.getUserInDB(emailField.getText(), passwordField.getText());
 			if(id<0)
 			{
-				System.out.println("User not found in DB");
+				showAlertBox("Email or password is wrong!");
 			}
 			else 
 			{
@@ -55,7 +57,7 @@ public class LoginScreenController {
 		}
 		else 
 		{
-			System.out.println("Error while connecting to DB");
+			showAlertBox("Error while connecting to database");
 		}
 	
 	}
@@ -111,6 +113,17 @@ public class LoginScreenController {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+	
+	private void showAlertBox(String problem)
+	{
+		Platform.runLater(() -> {
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Error!");
+            alert.setHeaderText(problem);
+            alert.showAndWait();
+        }
+		);
 	}
 	
 }

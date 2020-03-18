@@ -3,10 +3,14 @@ package ui;
 import java.awt.Button;
 
 import application.SQLConnector;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
+import javafx.stage.Window;
 
 public class RegistrationScreenController {
 
@@ -24,13 +28,14 @@ public class RegistrationScreenController {
 				emailField.getText().isEmpty() || nameField.getText().isEmpty() ||
 				addressField.getText().isEmpty())
 		{
-			System.out.println("You need to fill all fields");
+			showAlertBox("You need to fill all fields");
+			return;
 		}
 		
 		//Kontrola zhodovania hesla
 		if(!passwordField1.equals(passwordField1))
 		{
-			System.out.println("Passwords do not match");
+			showAlertBox("Passwords do not match");
 			return;
 		}
 		
@@ -45,18 +50,46 @@ public class RegistrationScreenController {
 			
 			if(!result)
 			{
-				System.out.println("Adding user failed");
+				showAlertBox("Adding user failed");
 			}
 			else 
 			{
 				//Zavretie registracneho okna + pridat popup OK?
 				Stage stage = (Stage) passwordField1.getScene().getWindow();
+				
+				Platform.runLater(() -> {
+					//Musel som pridat window pretoze pri zavreti Stagu sa Alert zasekol
+		            ButtonType closeButton = new ButtonType("Close");
+					
+		            Alert alert = new Alert(Alert.AlertType.NONE,"",closeButton);
+		            alert.setTitle("Success");
+		            alert.setHeaderText("User added!");
+		            
+		            Window window = alert.getDialogPane().getScene().getWindow();
+		            window.setOnCloseRequest(e -> alert.hide());
+		            		            
+		            alert.showAndWait();		           	            
+		        }
+				);
+				
 				stage.close();
+				
 			}
 		}
 		else 
 		{
-			System.out.println("Failed to connect to DB");
+			showAlertBox("Error while connecting to database");
 		}
+	}
+	
+	private void showAlertBox(String problem)
+	{
+		Platform.runLater(() -> {
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Error!");
+            alert.setHeaderText(problem);
+            alert.showAndWait();
+        }
+		);
 	}
 }
