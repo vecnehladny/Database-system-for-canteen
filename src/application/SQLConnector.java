@@ -2,12 +2,21 @@ package application;
 
 import java.sql.*;
 
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Scene;
+import javafx.scene.layout.AnchorPane;
+import javafx.stage.Stage;
+
 //Tato classa sluzi na pripojenie k MySQL a vykonanie Queries
 public class SQLConnector {
     private Connection connection = null;
     private Statement statement = null;
     private PreparedStatement preparedStatement = null;
     private ResultSet resultSet = null;
+   
+    private String username = "root";
+    private String password = "root";
+    
     
     //Nacitanie drivera a pripojenie k databaze
     public void connectToDB()
@@ -21,117 +30,43 @@ public class SQLConnector {
         }
 
         try {
-            //Amazon databaza - mozeme ju kludne pouzit namiesto localhostu 
-            connection = DriverManager
-                    .getConnection("jdbc:mysql://vava-db.ctknqglftm5b.eu-central-1.rds.amazonaws.com/dbsDB?characterEncoding=latin1",
-                            "masteradmin", "vavadatabaza123.");
-        } catch (SQLException e) {
-            System.out.println("Connection Failed! Check output console");
-            e.printStackTrace();
+        	//Localhost databaza - bude lepsia pri 1milione zaznamoch
+        	connection = DriverManager
+                    .getConnection("jdbc:mysql://localhost:3306/dbs_db?characterEncoding=latin1",username, password);
+        	
+             
+        } catch (SQLException e) {              	
+            System.out.println("Error code "+e.getErrorCode());
+            
+            if(e.getErrorCode() == 1049) {
+            	Connection baseConnection = getMysqlConnection();
+            	SQLDatabaseCreator.createDatabase(baseConnection,this);
+            }
+            
             return;
         }
 
         //Debug If, neskor zmazat
         if (connection != null) {
             System.out.println("Connection established");
-            checkDBTables();
         } else {
             System.out.println("Failed to make connection!");
         }
     }
     
-    private void checkDBTables()
-    {
-    	//Zistovanie, ci ma databaza vytvorene tabulky. Ak nema, tak ich vytvori.
-    	DatabaseMetaData databaseMetaData;
-		try {
-			databaseMetaData = connection.getMetaData();
-	    	ResultSet rSet = databaseMetaData.getTables(null, null, "%", null);
-	    	
-	    	//Ak je tabulka uplne prazdna
-	    	if(!rSet.next())
-	    	{
-	    		SQLTableCreator.createChefs(connection);
-	    		SQLTableCreator.createFood(connection);
-	    		SQLTableCreator.createFoodChef(connection);
-	    		SQLTableCreator.createFoodIngredients(connection);
-	    		SQLTableCreator.createIngredients(connection);
-	    		SQLTableCreator.createItems(connection);
-	    		SQLTableCreator.createOrders(connection);
-	    		SQLTableCreator.createUsers(connection);
-	    		return;
-	    	}
-	    	
-	    	//Kontrola, ci nechyba iba nejaka tabulka
-	    	if(!rSet.getString(3).equals("chefs")){
-	    		SQLTableCreator.createChefs(connection);
-	    	}
-	    	else {
-	    		resultNext(rSet);
-	    	}
-	    	
-	    	if(!rSet.getString(3).equals("food")){
-	    		SQLTableCreator.createFood(connection);
-	    	}
-	    	else {
-	    		resultNext(rSet);
-	    	}
-	    	
-	    	if(!rSet.getString(3).equals("food_chef")){
-	    		SQLTableCreator.createFoodChef(connection);
-	    	}
-	    	else {
-	    		resultNext(rSet);
-	    	}
-	    	
-	    	if(!rSet.getString(3).equals("food_ingredients")){
-	    		SQLTableCreator.createFoodIngredients(connection);
-	    	}	  
-	    	else {
-	    		resultNext(rSet);
-	    	}
-	    	
-	    	if(!rSet.getString(3).equals("ingredients")){
-	    		SQLTableCreator.createIngredients(connection);
-	    	}	  
-	    	else {
-	    		resultNext(rSet);
-	    	}
-	    	
-	    	if(!rSet.getString(3).equals("items")){
-	    		SQLTableCreator.createItems(connection);
-	    	}
-	    	else {    	
-	    		resultNext(rSet);
-	    	}
-	    	
-	    	if(!rSet.getString(3).equals("orders")){
-	    		SQLTableCreator.createOrders(connection);
-	    	}	    	
-	    	else {
-	    		resultNext(rSet);
-	    	}
-	    	
-	    	if(!rSet.getString(3).equals("users")){
-	    		SQLTableCreator.createUsers(connection);
-	    	}   	
-
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-    }
-    
-    private void resultNext(ResultSet rs)
+    private Connection getMysqlConnection()
     {
     	try {
-    		if(!rs.isLast())
-    			rs.next();
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+        	connection = DriverManager
+                    .getConnection("jdbc:mysql://localhost:3306/?characterEncoding=latin1",username, password);        	
+        	return connection;
+        } catch (SQLException e) {              	
+        	e.printStackTrace();
+            return null;
+        }
     }
+    
+    public Connection getConnection() {	return connection;	}
 
     //Skontroluje, ci sme pripojeny k databaze
     public boolean isConnectedToDB()
