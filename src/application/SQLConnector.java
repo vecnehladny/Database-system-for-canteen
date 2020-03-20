@@ -2,11 +2,6 @@ package application;
 
 import java.sql.*;
 
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Scene;
-import javafx.scene.layout.AnchorPane;
-import javafx.stage.Stage;
-
 //Tato classa sluzi na pripojenie k MySQL a vykonanie Queries
 public class SQLConnector {
     private Connection connection = null;
@@ -24,7 +19,7 @@ public class SQLConnector {
         try {
             Class.forName("com.mysql.jdbc.Driver");
         } catch (ClassNotFoundException e) {
-            System.out.println("MySQL JDBC Driver not found!");
+            System.out.println("JDBC Driver not found");
             e.printStackTrace();
             return;
         }
@@ -38,6 +33,7 @@ public class SQLConnector {
         } catch (SQLException e) {              	
             System.out.println("Error code "+e.getErrorCode());
             
+            //V pripade, ze databaza neexistuje tak ju vytvorime
             if(e.getErrorCode() == 1049) {
             	Connection baseConnection = getMysqlConnection();
             	SQLDatabaseCreator.createDatabase(baseConnection,this);
@@ -45,15 +41,9 @@ public class SQLConnector {
             
             return;
         }
-
-        //Debug If, neskor zmazat
-        if (connection != null) {
-            System.out.println("Connection established");
-        } else {
-            System.out.println("Failed to make connection!");
-        }
     }
     
+    //Pripojenie celkovo na localhost nie na konkretnu databazu
     private Connection getMysqlConnection()
     {
     	try {
@@ -92,7 +82,7 @@ public class SQLConnector {
 
             System.out.println("User: "+email+" passw: "+password+" added.");
         } catch (SQLException e) {
-            System.out.println("Problem with adding user, check logs");
+            System.out.println("Problem with adding user");
             e.printStackTrace();
             return false;
         }
@@ -123,7 +113,7 @@ public class SQLConnector {
                 }
             }
         } catch (SQLException e) {
-            System.out.println("Problem with checking user, check logs");
+            System.out.println("Problem with checking user");
             e.printStackTrace();
             return -1;
         }
@@ -139,12 +129,12 @@ public class SQLConnector {
 
             statement.execute("DELETE from users");
             //Reset autoincrement
-            statement.execute("ALTER TABLE dbsDB.users AUTO_INCREMENT = 1;");
+            statement.execute("ALTER TABLE dbs_db.users AUTO_INCREMENT = 1;");
 
             System.out.println("USERS TABLE DELETED");
 
         } catch (SQLException e) {
-            System.out.println("Problem with deleting users table, check logs");
+            System.out.println("Problem with deleting users table");
             e.printStackTrace();
         }
     }
