@@ -82,8 +82,14 @@ public class SQLConnector {
 
             System.out.println("User: "+email+" passw: "+password+" added.");
         } catch (SQLException e) {
-            System.out.println("Problem with adding user");
-            e.printStackTrace();
+            System.out.println("Problem with adding user - code "+ e.getErrorCode());
+            
+            if(e.getErrorCode() == 1062){
+            	System.out.println("User already exists!");
+            }
+            else {
+                e.printStackTrace();
+            }
             return false;
         }
         return true;

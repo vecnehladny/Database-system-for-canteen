@@ -111,6 +111,8 @@ public class SQLDatabaseCreator {
 	
 	public static void createDatabase(Connection connection,SQLConnector connector)
 	{
+		System.out.println("Creating database.");
+		
 		if(connection == null) {	return;}	
 		try {
 			//Vytvorenie novej databazy

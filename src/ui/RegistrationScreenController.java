@@ -33,7 +33,7 @@ public class RegistrationScreenController {
 		}
 		
 		//Kontrola zhodovania hesla
-		if(!passwordField1.equals(passwordField1))
+		if(!passwordField1.getText().equals(passwordField2.getText()))
 		{
 			showAlertBox("Passwords do not match");
 			return;
