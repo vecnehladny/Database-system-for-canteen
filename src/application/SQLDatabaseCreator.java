@@ -5,10 +5,10 @@ import java.sql.*;
 
 public class SQLDatabaseCreator {
 
-	static String databaseString = "CREATE DATABASE `dbs_db`;";
+	static String databaseString = "CREATE DATABASE `dbs_db`  charset=utf8;";
 	
 	static String usersString = "" +
-			"	CREATE TABLE `users` (" + 
+			"	CREATE TABLE dbs_db.users (" + 
 			"   `ID` int NOT NULL AUTO_INCREMENT," + 
 			"   `NAME` varchar(45) NOT NULL," + 
 			"   `ADDRESS` varchar(45) NOT NULL," + 
@@ -22,7 +22,7 @@ public class SQLDatabaseCreator {
 			"	DEFAULT CHARSET=utf8;";
 	
 	static String foodChefString = "" +
-			"	CREATE TABLE `food_chef` (" + 
+			"	CREATE TABLE dbs_db.food_chef (" + 
 			"   `ID` int NOT NULL AUTO_INCREMENT," + 
 			"   `CHEF_ID` int NOT NULL," + 
 			"   `FOOD_ID` int NOT NULL," + 
@@ -34,7 +34,7 @@ public class SQLDatabaseCreator {
 			"	DEFAULT CHARSET=utf8;";
 	
 	static String chefsString = "" +
-			"	CREATE TABLE `chefs` (" + 
+			"	CREATE TABLE dbs_db.chefs (" + 
 			"   `ID` int NOT NULL AUTO_INCREMENT," + 
 			"   `NAME` varchar(45) NOT NULL," + 
 			"   PRIMARY KEY (`ID`)" + 
@@ -43,7 +43,7 @@ public class SQLDatabaseCreator {
 			"	DEFAULT CHARSET=utf8;";
 	
 	static String foodString = "" +
-			"	CREATE TABLE `food` (" + 
+			"	CREATE TABLE dbs_db.food (" + 
 			"   `ID` int NOT NULL AUTO_INCREMENT," + 
 			"   `NAME` varchar(45) NOT NULL," + 
 			"   `PRICE` int NOT NULL," + 
@@ -54,7 +54,7 @@ public class SQLDatabaseCreator {
 			"	DEFAULT CHARSET=utf8;";
 	
 	static String foodIngredientsString = "" +
-			"	CREATE TABLE `food_ingredients` (" + 
+			"	CREATE TABLE dbs_db.food_ingredients (" + 
 			"   `ID` int NOT NULL AUTO_INCREMENT," + 
 			"   `FOOD_ID` int NOT NULL," + 
 			"   `INGREDIENTS_ID` int NOT NULL," + 
@@ -66,7 +66,7 @@ public class SQLDatabaseCreator {
 			"	DEFAULT CHARSET=utf8;";
 	
 	static String ingredientsString = ""+
-			"	CREATE TABLE `ingredients` (" + 
+			"	CREATE TABLE dbs_db.ingredients (" + 
 			"   `ID` int NOT NULL AUTO_INCREMENT," + 
 			"   `NAME` varchar(45) NOT NULL," + 
 			"   PRIMARY KEY (`ID`)," + 
@@ -75,38 +75,40 @@ public class SQLDatabaseCreator {
 			"	ENGINE=InnoDB " +
 			"	DEFAULT CHARSET=utf8;";
 	
-	static String itemsString = "" +
-			"	CREATE TABLE `items` (" + 
+	static String foodOrdersString = "" +
+			"	CREATE TABLE dbs_db.food_orders (" + 
 			"   `ID` int NOT NULL AUTO_INCREMENT," + 
 			"   `FOOD_ID` int NOT NULL," + 
+			"   `ORDER_ID` int NOT NULL," + 
 			"   `COUNT` int NOT NULL," + 
 			"   PRIMARY KEY (`ID`)," + 
-			"	CONSTRAINT `i_food` FOREIGN KEY (`FOOD_ID`) REFERENCES `food` (ID)" + 
+			"	CONSTRAINT `fo_order` FOREIGN KEY (`ORDER_ID`) REFERENCES `orders` (ID)," + 
+			"	CONSTRAINT `fo_food` FOREIGN KEY (`FOOD_ID`) REFERENCES `food` (ID)" + 
 			"	) " +
 			"	ENGINE=InnoDB " +
 			"	DEFAULT CHARSET=utf8;";
 	
 	static String ordersString = "" +
-			"	CREATE TABLE `orders` (" + 
+			"	CREATE TABLE dbs_db.orders (" + 
 			"   `ID` int NOT NULL AUTO_INCREMENT," + 
 			"   `TIME` timestamp NOT NULL," + 
 			"   `USER_ID` int NOT NULL," + 
-			"   PRIMARY KEY (`ID`,`TIME`)," + 
+			"   PRIMARY KEY (`ID`)," + 
 			"	CONSTRAINT `o_users` FOREIGN KEY (`USER_ID`) REFERENCES `users` (ID)" + 
 			"	) " +
 			"	ENGINE=InnoDB " +
 			"	DEFAULT CHARSET=utf8;";
 	
-	static String itemsOrdersString = "" +
-			"	CREATE TABLE `items_orders` (" + 
+	static String billString = "" +
+			"	CREATE TABLE dbs_db.bill (" + 
 			"   `ID` int NOT NULL AUTO_INCREMENT," + 
-			"   `ITEM_ID` int NOT NULL," + 
 			"   `ORDER_ID` int NOT NULL," + 
-			"   PRIMARY KEY (`ID`), "	+
-			"	CONSTRAINT `io_item` FOREIGN KEY (`ITEM_ID`) REFERENCES `items` (ID)," + 
-			"	CONSTRAINT `io_order` FOREIGN KEY (`ORDER_ID`) REFERENCES `orders` (ID)" + 
-			"	) "	+
-			"	ENGINE=InnoDB "	+
+			"   `PAID` bool NOT NULL," + 
+			"   `PRICE` int NOT NULL," + 
+			"   PRIMARY KEY (`ID`)," + 
+			"	CONSTRAINT `b_order` FOREIGN KEY (`ORDER_ID`) REFERENCES `orders` (ID)" + 
+			"	) " +
+			"	ENGINE=InnoDB " +
 			"	DEFAULT CHARSET=utf8;";
 	
 	public static void createDatabase(Connection connection,SQLConnector connector)
@@ -139,8 +141,9 @@ public class SQLDatabaseCreator {
 		createTable(connection,foodChefString);
 		createTable(connection,foodIngredientsString);
 		createTable(connection,ordersString);
-		createTable(connection,itemsString);
-		createTable(connection,itemsOrdersString);
+		createTable(connection,foodOrdersString);
+		createTable(connection,billString);
+
 	}
 	
 	private static void createTable(Connection connection, String query)

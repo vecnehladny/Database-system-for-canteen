@@ -51,6 +51,7 @@ public class LoginScreenController {
 			}
 			else 
 			{
+				System.out.println("User ID in users table is "+id);
 				connector.closeConnection();
 				loadMainMenuScene(event);
 			}

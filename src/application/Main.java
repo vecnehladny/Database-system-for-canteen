@@ -4,9 +4,9 @@ import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.stage.Stage;
 import javafx.scene.Scene;
-import javafx.scene.control.Label;
+//import javafx.scene.control.Label;
 import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.BorderPane;
+//import javafx.scene.layout.BorderPane;
 
 
 public class Main extends Application {
@@ -16,10 +16,11 @@ public class Main extends Application {
 	@Override
 	public void start(Stage primaryStage) {
 			
-		showLoadingPage(primaryStage);
+		//Nechceme aby sa DB vytvarala pomocou kodu
+		/*showLoadingPage(primaryStage);
 		SQLConnector connector = new SQLConnector();
 		connector.connectToDB();
-		connector.closeConnection();
+		connector.closeConnection();*/
 		//primaryStage.close();
 		
 		try {
@@ -40,6 +41,7 @@ public class Main extends Application {
 		launch(args);
 	}
 	
+	/*
 	private void showLoadingPage(Stage primaryStage)
 	{
 		//Prerobit na fxml
@@ -50,7 +52,7 @@ public class Main extends Application {
 		primaryStage.setScene(scene);
 		primaryStage.setResizable(false);
 		primaryStage.setTitle(LOGIN_STRING);
-		primaryStage.show();
-		
+		primaryStage.show();		
 	}
+	*/
 }

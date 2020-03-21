@@ -16,6 +16,7 @@ public class SQLConnector {
     //Nacitanie drivera a pripojenie k databaze
     public void connectToDB()
     {
+    	//Inicializacia ovladaca
         try {
             Class.forName("com.mysql.jdbc.Driver");
         } catch (ClassNotFoundException e) {
@@ -59,10 +60,7 @@ public class SQLConnector {
     public Connection getConnection() {	return connection;	}
 
     //Skontroluje, ci sme pripojeny k databaze
-    public boolean isConnectedToDB()
-    {
-        return connection != null;
-    }
+    public boolean isConnectedToDB() {	return connection != null;	}
 
     //Prida pouzivate do databazy.
     //Vrati true ak bola akcia uspesna inak false
@@ -164,6 +162,5 @@ public class SQLConnector {
             System.out.println("Error closing connection");
             e.printStackTrace();
         }
-        System.out.println("Connections closed");
     }
 }

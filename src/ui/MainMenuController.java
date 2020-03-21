@@ -1,7 +1,5 @@
 package ui;
 
-import java.awt.Event;
-
 import application.Food;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
