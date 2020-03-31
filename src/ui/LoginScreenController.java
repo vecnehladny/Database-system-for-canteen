@@ -53,7 +53,7 @@ public class LoginScreenController {
 			{
 				System.out.println("User ID in users table is "+id);
 				connector.closeConnection();
-				loadMainMenuScene(event);
+				loadMainMenuScene(event,false);
 			}
 		}
 		else 
@@ -94,20 +94,27 @@ public class LoginScreenController {
 		}
 	}
 	
-	public void loadMainMenuScene(ActionEvent event)
+	public void loadMainMenuScene(ActionEvent event,boolean isPriviledged)
 	{
 		System.out.println("Changing scene to main menu scene");
 		
 		try {
-			Parent root = FXMLLoader.load(getClass().getResource("/ui/MainMenu.fxml"));
+			Parent root;
+			//if(isPriviledged) {
+				//root = FXMLLoader.load(getClass().getResource("/ui/admin/MainMenu.fxml"));
+			//}
+			//else {
+				root = FXMLLoader.load(getClass().getResource("/ui/user/MainMenu.fxml"));
+			//}
 			Scene scene = new Scene(root);
 			
-			Stage stage = (Stage) ((Node)event.getSource()).getScene().getWindow();
+			Stage pStage = (Stage) ((Node)event.getSource()).getScene().getWindow();
+			Stage stage = new Stage();
+			pStage.close();
 			
 			stage.setScene(scene);
 			stage.setResizable(false);
 			stage.setTitle(MAIN_MENU_TITLE);
-			
 			stage.show();
 			
 		} catch (IOException e) {

@@ -1,4 +1,4 @@
-package ui;
+package ui.user;
 
 import java.io.IOException;
 
@@ -24,7 +24,7 @@ public class FoodItemCell extends ListCell<Food> {
 	public FoodItemCell()
 	{
 		try {
-		FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/FoodItem.fxml"));		
+		FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/user/FoodItem.fxml"));		
 		foodView = loader.load();
 		foodItemController = loader.getController();
 		setGraphic(foodView);
@@ -68,7 +68,7 @@ public class FoodItemCell extends ListCell<Food> {
 	public void openDetailMenu(Food food)
 	{
 		try {
-			FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/ItemDetailScreen.fxml"));	
+			FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/user/ItemDetailScreen.fxml"));	
 			VBox root = (VBox) loader.load();
 			Scene scene = new Scene(root);		
 			Stage stage = new Stage();

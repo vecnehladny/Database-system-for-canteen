@@ -1,4 +1,4 @@
-package ui;
+package ui.user;
 
 import application.Food;
 import javafx.fxml.FXML;

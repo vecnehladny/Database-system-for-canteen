@@ -29,6 +29,7 @@ public class RegistrationScreenController {
 				addressField.getText().isEmpty())
 		{
 			showAlertBox("You need to fill all fields");
+			
 			return;
 		}
 		

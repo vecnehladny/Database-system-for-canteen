@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="800.0" prefWidth="900.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1">
+   <children>
+      <Label fx:id="datailsLabel" text="Order details">
+         <VBox.margin>
+            <Insets left="200.0" top="100.0" />
+         </VBox.margin>
+         <font>
+            <Font size="18.0" />
+         </font>
+      </Label>
+      <ListView fx:id="orderListView" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="300.0" prefWidth="500.0">
+         <VBox.margin>
+            <Insets left="200.0" top="10.0" />
+         </VBox.margin>
+      </ListView>
+      <Label fx:id="priceTextLabel" text="Price">
+         <VBox.margin>
+            <Insets left="415.0" top="50.0" />
+         </VBox.margin>
+         <font>
+            <Font size="25.0" />
+         </font>
+      </Label>
+      <Label fx:id="priceLabel" text="100 E">
+         <VBox.margin>
+            <Insets left="415.0" />
+         </VBox.margin>
+         <font>
+            <Font name="System Bold" size="24.0" />
+         </font>
+      </Label>
+      <Button fx:id="createOrderButton" mnemonicParsing="false" prefHeight="35.0" prefWidth="120.0" text="Create order">
+         <VBox.margin>
+            <Insets left="390.0" top="50.0" />
+         </VBox.margin></Button>
+   </children>
+</VBox>
