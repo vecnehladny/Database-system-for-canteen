@@ -9,7 +9,6 @@ import javafx.scene.control.cell.PropertyValueFactory;
 
 public class OrderVBoxController {
 
-	//Show order VBox UI
 	@FXML Button orderFilterBtn,orderNextBtn,orderPreviousBtn;	
 	@FXML TableView<Order> orderTableView;
 	
@@ -21,7 +20,7 @@ public class OrderVBoxController {
 			System.out.println("Opening filter");
 		});	
 		
-		//Pridat funckie addFood, next a previous - aby sme nezobrazili 1milion zaznamom naraz
+		//Pridat funckie next a previous - aby sme nezobrazili 1milion zaznamom naraz
 		orderNextBtn.setOnAction(e->{
 			System.out.println("Next btn pressed");
 		});
@@ -45,6 +44,8 @@ public class OrderVBoxController {
 		    });
 		    return tRow ;
 		});
+		
+		//TODO pridat nacitanie objednavok
 		
 		//Debug
 		for(int i=1;i<1000;i++)

@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import data.FoodItem;
-import data.Order;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -19,9 +18,10 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.VBox;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 
-public class MainMenuController {
+public class UserMenuController {
 
 	@FXML Button profileButton;
 	@FXML Button foodButton;
@@ -31,15 +31,18 @@ public class MainMenuController {
 	//Food VBox UI
 	Button foodFilterBtn,foodNextBtn,foodPreviousBtn;	
 	TableView<FoodItem> foodTableView;
+	
 	//Checkout VBox UI
 	TableView<FoodItem> orderTableView;
 	Label priceLabel;
 	Button createOrderButton;	
+	
 	//Profile VBox UI
 	TextField nameField,addressField,passField1,passField2;
 	Button saveChangesButton;
 	
 	String LOGIN_STRING = "Login screen";
+	
 	//Toto bude nas obsah kosiku.
 	List<FoodItem> orderItems = new ArrayList<>();
 	
@@ -49,6 +52,7 @@ public class MainMenuController {
 		loadFoodVBox();
 	}	
 	
+	//Zavretie aktualneho okna a otvorenie prihlasenia
 	public void logOut(ActionEvent event)
 	{
 		try {
@@ -67,6 +71,7 @@ public class MainMenuController {
 		}
 	}
 	
+	@SuppressWarnings("unchecked")
 	public void loadCheckoutVBox()
 	{
 		try {
@@ -89,10 +94,11 @@ public class MainMenuController {
 			
 			createOrderButton.setOnAction(e->{
 				System.out.println("Order created");
+				//TODO tu by malo byt odoslanie do databazy
 				loadFoodVBox();
 			});
 			
-			//Set up table
+			//Nastavenie tabulky na spravne hodnoty
 			orderTableView.getColumns().get(0).setCellValueFactory(new PropertyValueFactory<>("name"));
 			orderTableView.getColumns().get(1).setCellValueFactory(new PropertyValueFactory<>("price"));
 			
@@ -114,15 +120,14 @@ public class MainMenuController {
 			}
 			orderTableView.getItems().addAll(orderItems);
 			
+			//Pocitanie ceny na zaklade produktov
 			int sum=0;
 			for (FoodItem foodItem : orderItems) {
 				sum+=Integer.valueOf(foodItem.getPrice());
 			}
-			priceLabel.setText(String.valueOf(sum)+ " E");
+			priceLabel.setText(String.valueOf(sum)+ " E");		
 			
-
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -155,12 +160,10 @@ public class MainMenuController {
 			
 			saveChangesButton.setOnAction(e->{
 				System.out.println("Saved changes in profile!");
+				//TODO tu by mal byt update usera
 				loadFoodVBox();
-			});
-			
-
+			});			
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -213,10 +216,13 @@ public class MainMenuController {
 			        if (event.getClickCount() == 2 && !tRow.isEmpty() ) {
 			        	FoodItem food = tRow.getItem();
 			            System.out.println("ID OF CLICKED food "+food.getId());
+			            openDetailMenu(food);
 			        }
 			    });
 			    return tRow ;
 			});
+			
+			//TODO tu by malo byt nacitanie jedla z DB
 			
 			//Debug
 			for(int i=1;i<1000;i++)
@@ -226,23 +232,59 @@ public class MainMenuController {
 
 
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
 	
+	public void changeFoodFilter(){
+		//TODO Tu by mal byt kod na zmenu filtrovania v menu
+	}
+	
+	//Otvori okno s filtrom
 	public void openFilterMenu()
 	{
 		try {
-			VBox root = (VBox)FXMLLoader.load(getClass().getResource("/ui/FilterScreen.fxml"));
+			FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/user/FilterScreen.fxml"));
+			VBox root = loader.load();
 			Scene scene = new Scene(root);
 			Stage primaryStage = new Stage();
 			primaryStage.setScene(scene);
 			primaryStage.setResizable(false);
 			primaryStage.setTitle("Filter");
+			//Nastavuje prioritu. Neda sa vratit naspat dokial nezavru toto okno
+			primaryStage.initModality(Modality.APPLICATION_MODAL); 
 			primaryStage.show();
 			
+			//Nastavenie referencie aby sa dal uplatnit filter
+			FilterScreenController filterScreenController = (FilterScreenController)loader.getController();
+			filterScreenController.setUserMenuControler(this);			
+			
 		} catch(Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	//Vytvori nove okno s detailom o polozke
+	private String DETAIL_TITLE = "Detail o polozke";
+	private void openDetailMenu(FoodItem food)
+	{
+		try {
+			FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/user/ItemDetailScreen.fxml"));	
+			VBox root = (VBox) loader.load();
+			Scene scene = new Scene(root);		
+			Stage stage = new Stage();
+			
+			stage.setScene(scene);
+			stage.setResizable(false);
+			stage.setTitle(DETAIL_TITLE);
+			
+			//Nastavuje prioritu. Neda sa vratit naspat dokial nezavru toto okno
+			stage.initModality(Modality.APPLICATION_MODAL); 			
+			stage.show();			
+			
+			ItemDetailScreenController itemDetailScreenController = loader.getController();
+			itemDetailScreenController.loadDetails(food);			
+		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}

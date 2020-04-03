@@ -94,6 +94,7 @@ public class SQLConnector {
     }
 
     //Skontroluje, ci sa v DB nachadza dany pouzivatel aj s heslom a vrati jeho ID
+    //TODO prerobit na vracanie user objektu
     public int getUserInDB(String email, String password)
     {
         if(connection == null) {    return -1;}

@@ -9,7 +9,6 @@ import javafx.scene.control.cell.PropertyValueFactory;
 
 public class UserVBoxController {
 
-	//Show user VBox UI
 	@FXML Button userFilterBtn,userNextBtn,userPreviousBtn;	
 	@FXML TableView<User> userTableView;
 	
@@ -21,7 +20,7 @@ public class UserVBoxController {
 			System.out.println("Opening filter");
 		});	
 		
-		//Pridat funckie addFood, next a previous - aby sme nezobrazili 1milion zaznamom naraz
+		//Pridat funckie next a previous - aby sme nezobrazili 1milion zaznamom naraz
 		userNextBtn.setOnAction(e->{
 			System.out.println("Next btn pressed");
 		});
@@ -44,6 +43,8 @@ public class UserVBoxController {
 		    });
 		    return tRow ;
 		});
+		
+		//TODO pridat nacitanie userov
 		
 		//Debug
 		for(int i=1;i<1000;i++)

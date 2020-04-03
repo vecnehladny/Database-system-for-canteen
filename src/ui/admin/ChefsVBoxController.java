@@ -42,6 +42,8 @@ public class ChefsVBoxController {
 		    return tRow ;
 		});
 		
+		//TODO pridat nacitanie z DB
+		
 		//Debug
 		for(int i=1;i<1000;i++)
 		{

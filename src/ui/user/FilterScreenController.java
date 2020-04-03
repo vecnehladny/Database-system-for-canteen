@@ -1,4 +1,4 @@
-package ui;
+package ui.user;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,6 +15,8 @@ import javafx.scene.control.MenuButton;
 import javafx.scene.control.Slider;
 import javafx.stage.Stage;
 
+//TODO prerobit design na nieco krajsie
+//Zatial sa pouziva iba na filtrovanie jedla u USERa
 public class FilterScreenController {
 
 	@FXML MenuButton containBox;
@@ -22,15 +24,17 @@ public class FilterScreenController {
 	@FXML Slider priceSlider;
 	@FXML Label priceLabel;
 	
+	//Max cena na slider - Zistit max cenu - alebo dame fixnu?
+	float maxPrice = 20;	
+	UserMenuController userMenuController;
 	
 	public void initialize()
 	{
 		System.out.println("Loaded filter screen!");
 		
-		//Zistit max cenu - alebo dame fixnu?
-		float maxPrice = 20;
-		
 		priceSlider.setMax(maxPrice);
+		
+		//Automaticka zmena textu pod sliderom
 		priceSlider.valueProperty().addListener(new ChangeListener<Number>() {
 			@Override
 			public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {		
@@ -43,13 +47,13 @@ public class FilterScreenController {
 		
 		priceSlider.setValue(maxPrice);
 		
-		
+		//Vycistenie boxov
 		containBox.getItems().clear();
 		notContainBox.getItems().clear();
 		containBox.setText("");
 		notContainBox.setText("");
 		
-		//Dorobit nacitavanie ingrendiencii
+		//TODO Dorobit nacitavanie ingrendiencii z DB
 		List<String> ingredients = new ArrayList<>();
 		ingredients.add("oregano");
 		ingredients.add("paprika");
@@ -73,14 +77,15 @@ public class FilterScreenController {
 		
 	}
 	
+	public void setUserMenuControler(UserMenuController userMenuController) {
+		this.userMenuController = userMenuController;
+	}
+	
+	//Tato metoda zavola metodu v main menu a tam sa nastavi filtrovanie food tabulky.
 	public void saveChanges(ActionEvent event)
 	{
 		System.out.println("Filter used!!");
-		closeWindow(event);
-	}
-	
-	private void closeWindow(ActionEvent event)
-	{
+		userMenuController.changeFoodFilter();
 		Stage pStage = (Stage) ((Node)event.getSource()).getScene().getWindow();
 		pStage.close();
 	}

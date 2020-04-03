@@ -42,6 +42,8 @@ public class IngredientsVBoxController {
 		    return tRow ;
 		});
 		
+		//TODO pridat nacitanie ingrediencii z DB
+		
 		//Debug
 		for(int i=1;i<1000;i++)
 		{

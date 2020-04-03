@@ -9,7 +9,6 @@ import javafx.scene.control.cell.PropertyValueFactory;
 
 public class FoodVBoxController {
 
-	//Show food VBox UI
 	@FXML Button foodFilterBtn,foodNextBtn,foodPreviousBtn;	
 	@FXML TableView<FoodItem> foodTableView;
 	
@@ -21,7 +20,7 @@ public class FoodVBoxController {
 			System.out.println("Opening filter");
 		});	
 		
-		//Pridat funckie addFood, next a previous - aby sme nezobrazili 1milion zaznamom naraz
+		//Pridat funkcie addFood, next a previous - aby sme nezobrazili 1milion zaznamom naraz
 		foodNextBtn.setOnAction(e->{
 			System.out.println("Next btn pressed");
 		});
@@ -44,6 +43,8 @@ public class FoodVBoxController {
 		    });
 		    return tRow ;
 		});
+		
+		//TODO pridat nacitanie jedla z DB
 		
 		//Debug
 		for(int i=1;i<1000;i++)

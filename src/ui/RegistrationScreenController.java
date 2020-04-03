@@ -1,11 +1,10 @@
 package ui;
 
-import java.awt.Button;
-
 import application.SQLConnector;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
@@ -83,6 +82,7 @@ public class RegistrationScreenController {
 		}
 	}
 	
+	//Vytvara chybove hlasky pri prihlasovani
 	private void showAlertBox(String problem)
 	{
 		Platform.runLater(() -> {

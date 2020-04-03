@@ -25,8 +25,9 @@ public class LoginScreenController {
 	@FXML PasswordField passwordField;
 	@FXML TextField emailField;
 	
-	String REGISTRATION_TITLE = "Registration";
-	String MAIN_MENU_TITLE = "Main Menu";
+	private String REGISTRATION_TITLE = "Registration";
+	private String USER_MENU_TITLE = "User Main Menu";
+	private String ADMIN_MENU_TITLE = "Admin Main Menu";
 	
 	public void logInButtonPressed(ActionEvent event)
 	{		
@@ -51,6 +52,7 @@ public class LoginScreenController {
 		connector.connectToDB();	
 		if(connector.isConnectedToDB())
 		{
+			//Bolo by dobre prerobit ten connector aby vracal user objekt namiesto ID.
 			int id = connector.getUserInDB(emailField.getText(), passwordField.getText());
 			if(id<0)
 			{
@@ -70,17 +72,9 @@ public class LoginScreenController {
 	
 	}
 	
-	public void registerButtonPressed()
+	public void loadRegisterScene()
 	{
-		System.out.println("Register button pressed");
-		
-		loadRegisterScene();
-	}
 	
-	private void loadRegisterScene()
-	{
-		System.out.println("Changing scene to register scene");
-		
 		try {
 			AnchorPane root = (AnchorPane)FXMLLoader.load(getClass().getResource("/ui/RegistrationScreen.fxml"));
 			Scene scene = new Scene(root);		
@@ -88,48 +82,46 @@ public class LoginScreenController {
 			
 			stage.setScene(scene);
 			stage.setResizable(false);
-			stage.setTitle(REGISTRATION_TITLE);
-			
+			stage.setTitle(REGISTRATION_TITLE);		
 			//Nastavuje prioritu. Neda sa vratit naspat dokial nezavru toto okno
 			stage.initModality(Modality.APPLICATION_MODAL); 
 			
 			stage.show();
 			
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
 	
 	public void loadMainMenuScene(ActionEvent event,boolean isPriviledged)
-	{
-		System.out.println("Changing scene to main menu scene");
-		
+	{		
 		try {
 			Parent root;
+			Stage stage = new Stage();
+			
+			//Podla toho, ci ma prava otvorime spravne UI
 			if(isPriviledged) {
-				root = FXMLLoader.load(getClass().getResource("/ui/admin/MainMenu.fxml"));
+				root = FXMLLoader.load(getClass().getResource("/ui/admin/AdminMenu.fxml"));
+				stage.setTitle(ADMIN_MENU_TITLE);
 			}
 			else {
-				root = FXMLLoader.load(getClass().getResource("/ui/user/MainMenu.fxml"));
+				root = FXMLLoader.load(getClass().getResource("/ui/user/UserMenu.fxml"));
+				stage.setTitle(USER_MENU_TITLE);
 			}
-			Scene scene = new Scene(root);
-			
+			Scene scene = new Scene(root);		
 			Stage pStage = (Stage) ((Node)event.getSource()).getScene().getWindow();
-			Stage stage = new Stage();
-			pStage.close();
+			pStage.close(); //Zatvorenie stareho okna
 			
 			stage.setScene(scene);
 			stage.setResizable(false);
-			stage.setTitle(MAIN_MENU_TITLE);
 			stage.show();
 			
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
-	
+
+	//Vytvara chybove hlasky pri prihlasovani
 	private void showAlertBox(String problem)
 	{
 		Platform.runLater(() -> {
