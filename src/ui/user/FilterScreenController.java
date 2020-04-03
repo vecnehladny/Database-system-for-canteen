@@ -60,6 +60,7 @@ public class FilterScreenController {
 		ingredients.add("rajciny");
 		ingredients.add("kecup");
 		
+		
 		for (String string : ingredients) {
 			CheckBox cb0 = new CheckBox(string);  
 			CustomMenuItem item0 = new CustomMenuItem(cb0); 
