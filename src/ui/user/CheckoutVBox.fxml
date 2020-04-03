@@ -3,7 +3,8 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
-<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
@@ -11,17 +12,21 @@
    <children>
       <Label fx:id="datailsLabel" text="Order details">
          <VBox.margin>
-            <Insets left="200.0" top="100.0" />
+            <Insets left="150.0" top="100.0" />
          </VBox.margin>
          <font>
             <Font size="18.0" />
          </font>
       </Label>
-      <ListView fx:id="orderListView" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="300.0" prefWidth="500.0">
+      <TableView fx:id="orderTableView" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="300.0" prefWidth="600.0">
+         <columns>
+            <TableColumn editable="false" maxWidth="400.0" minWidth="400.0" prefWidth="400.0" resizable="false" text="Name of food" />
+            <TableColumn editable="false" maxWidth="150.0" minWidth="150.0" prefWidth="150.0" resizable="false" text="Price" />
+         </columns>
          <VBox.margin>
-            <Insets left="200.0" top="10.0" />
+            <Insets left="150.0" />
          </VBox.margin>
-      </ListView>
+      </TableView>
       <Label fx:id="priceTextLabel" text="Price">
          <VBox.margin>
             <Insets left="415.0" top="50.0" />

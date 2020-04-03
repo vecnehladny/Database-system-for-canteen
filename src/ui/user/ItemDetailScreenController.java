@@ -1,6 +1,6 @@
 package ui.user;
 
-import application.Food;
+import data.FoodItem;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 
@@ -11,11 +11,11 @@ public class ItemDetailScreenController {
 	@FXML Label priceLabel;
 		
 	//Nacita detaily do novo otvoreneho okna
-	public void loadDetails(Food food)
+	public void loadDetails(FoodItem food)
 	{
 		System.out.println("LOADING DETAILS");
 		nameLabel.setText(food.getName());
-		priceLabel.setText(food.getPrice().toString());
+		priceLabel.setText(food.getPrice());
 	}
 	
 }

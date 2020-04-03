@@ -39,6 +39,13 @@ public class LoginScreenController {
 			return;
 		}
 		
+		//Zatial hardcoded neskoro zmazat
+		if(passwordField.getText().equals("admin") && emailField.getText().equals("admin")) {
+			System.out.println("LOADING ADMIN ACCOUNT");
+			loadMainMenuScene(event,true);
+			return;
+		}
+		
 		//Overenie pouzivatela v DB - vrati ID ak najde alebo -1 ak nenajde
 		SQLConnector connector = new SQLConnector();
 		connector.connectToDB();	
@@ -100,12 +107,12 @@ public class LoginScreenController {
 		
 		try {
 			Parent root;
-			//if(isPriviledged) {
-				//root = FXMLLoader.load(getClass().getResource("/ui/admin/MainMenu.fxml"));
-			//}
-			//else {
+			if(isPriviledged) {
+				root = FXMLLoader.load(getClass().getResource("/ui/admin/MainMenu.fxml"));
+			}
+			else {
 				root = FXMLLoader.load(getClass().getResource("/ui/user/MainMenu.fxml"));
-			//}
+			}
 			Scene scene = new Scene(root);
 			
 			Stage pStage = (Stage) ((Node)event.getSource()).getScene().getWindow();

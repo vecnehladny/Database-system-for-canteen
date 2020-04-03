@@ -1,4 +1,4 @@
-package ui.user;
+package ui;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,8 +31,6 @@ public class FilterScreenController {
 		float maxPrice = 20;
 		
 		priceSlider.setMax(maxPrice);
-		priceSlider.setValue(maxPrice);
-		priceLabel.setText("");
 		priceSlider.valueProperty().addListener(new ChangeListener<Number>() {
 			@Override
 			public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {		
@@ -42,6 +40,8 @@ public class FilterScreenController {
 			}
 			
 		});
+		
+		priceSlider.setValue(maxPrice);
 		
 		
 		containBox.getItems().clear();

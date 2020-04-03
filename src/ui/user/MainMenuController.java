@@ -1,8 +1,11 @@
 package ui.user;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
-import application.Food;
+import data.FoodItem;
+import data.Order;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -10,8 +13,10 @@ import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.control.ListView;
+import javafx.scene.control.TableRow;
+import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
@@ -24,10 +29,10 @@ public class MainMenuController {
 	@FXML VBox contentVBox;
 	
 	//Food VBox UI
-	ListView<Food> menuListView; 
-	Button filterButton,nextButton,previousButton;	
+	Button foodFilterBtn,foodNextBtn,foodPreviousBtn;	
+	TableView<FoodItem> foodTableView;
 	//Checkout VBox UI
-	ListView<Food> orderListView;
+	TableView<FoodItem> orderTableView;
 	Label priceLabel;
 	Button createOrderButton;	
 	//Profile VBox UI
@@ -35,24 +40,14 @@ public class MainMenuController {
 	Button saveChangesButton;
 	
 	String LOGIN_STRING = "Login screen";
+	//Toto bude nas obsah kosiku.
+	List<FoodItem> orderItems = new ArrayList<>();
 	
 	//Zavola sa pri prepnuti sceny
 	public void initialize()
 	{
 		loadFoodVBox();
 	}	
-	
-	//Debug function - prida nahodne veci do listu
-	public void addItemsToList(ListView<Food> menuListView)
-	{
-		for(int i =0;i<10;i++)
-		{
-			Food food = new Food("Test"+i, i*1.2);
-			menuListView.getItems().add(food);
-		}
-		Food food = new Food("Test1654094651064", 1.2);
-		menuListView.getItems().add(food);
-	}
 	
 	public void logOut(ActionEvent event)
 	{
@@ -72,7 +67,6 @@ public class MainMenuController {
 		}
 	}
 	
-	@SuppressWarnings("unchecked")
 	public void loadCheckoutVBox()
 	{
 		try {
@@ -80,10 +74,10 @@ public class MainMenuController {
 			contentVBox.getChildren().clear();
 			contentVBox.getChildren().addAll(newVBox.getChildren());
 
-			//Nastavenie UI referencii-
+			//Nastavenie UI referencii
 			for (Node obj : contentVBox.getChildren()) {
-				if(obj.getId().equals("orderListView")){
-					orderListView = (ListView<Food>) obj;
+				if(obj.getId().equals("orderTableView")){
+					orderTableView = (TableView<FoodItem>) obj;
 				}
 				if(obj.getId().equals("createOrderButton")){
 					createOrderButton = (Button) obj;
@@ -93,14 +87,38 @@ public class MainMenuController {
 				}
 			}
 			
-			//Nacitanie listu - DEBUG
-			orderListView.setCellFactory(l ->new FoodItemCell());
-			addItemsToList(orderListView);
-			
 			createOrderButton.setOnAction(e->{
 				System.out.println("Order created");
 				loadFoodVBox();
 			});
+			
+			//Set up table
+			orderTableView.getColumns().get(0).setCellValueFactory(new PropertyValueFactory<>("name"));
+			orderTableView.getColumns().get(1).setCellValueFactory(new PropertyValueFactory<>("price"));
+			
+			orderTableView.setRowFactory(e -> {
+			    TableRow<FoodItem> tRow = new TableRow<>();
+			    tRow.setOnMouseClicked(event -> {
+			        if (event.getClickCount() == 2 && !tRow.isEmpty() ) {
+			        	FoodItem food = tRow.getItem();
+			            System.out.println("ID OF CLICKED food "+food.getId());
+			        }
+			    });
+			    return tRow ;
+			});
+			
+			//Debug
+			for(int i=1;i<12;i++)
+			{
+				orderItems.add(new FoodItem(i, "Gulas"+i, i, "Jozko Mrkvicka",null));
+			}
+			orderTableView.getItems().addAll(orderItems);
+			
+			int sum=0;
+			for (FoodItem foodItem : orderItems) {
+				sum+=Integer.valueOf(foodItem.getPrice());
+			}
+			priceLabel.setText(String.valueOf(sum)+ " E");
 			
 
 		} catch (IOException e) {
@@ -158,35 +176,53 @@ public class MainMenuController {
 
 			//Nastavenie UI referencii-
 			for (Node obj : contentVBox.getChildren()) {
-				if(obj.getId().equals("menuListView")){
-					menuListView = (ListView<Food>) obj;
+				if(obj.getId().equals("foodTableView")){
+					foodTableView = (TableView<FoodItem>) obj;
 				}
-				if(obj.getId().equals("filterButton")){
-					filterButton = (Button) obj;
+				if(obj.getId().equals("foodFilterBtn")){
+					foodFilterBtn = (Button) obj;
 				}
-				if(obj.getId().equals("nextButton")){
-					nextButton = (Button) obj;
+				if(obj.getId().equals("foodNextBtn")){
+					foodNextBtn = (Button) obj;
 				}
-				if(obj.getId().equals("previousButton")){
-					previousButton = (Button) obj;
+				if(obj.getId().equals("foodPreviousBtn")){
+					foodPreviousBtn = (Button) obj;
 				}
 			}
-			
-			//Nacitanie listu - DEBUG
-			menuListView.setCellFactory(l ->new FoodItemCell());
-			addItemsToList(menuListView);
-						
-			filterButton.setOnAction(e->{
+								
+			foodFilterBtn.setOnAction(e->{
 				openFilterMenu();
 			});	
 			
 			//Pridat funckie next a previous - aby sme nezobrazili 1milion zaznamom naraz
-			nextButton.setOnAction(e->{
+			foodNextBtn.setOnAction(e->{
 				System.out.println("Next btn pressed");
 			});
-			previousButton.setOnAction(e->{
+			foodPreviousBtn.setOnAction(e->{
 				System.out.println("Previous btn pressed");
 			});
+			
+			//Nacitanie tabulky
+			foodTableView.getColumns().get(0).setCellValueFactory(new PropertyValueFactory<>("name"));
+			foodTableView.getColumns().get(1).setCellValueFactory(new PropertyValueFactory<>("price"));
+			foodTableView.getColumns().get(2).setCellValueFactory(new PropertyValueFactory<>("chef"));
+			
+			foodTableView.setRowFactory(e -> {
+			    TableRow<FoodItem> tRow = new TableRow<>();
+			    tRow.setOnMouseClicked(event -> {
+			        if (event.getClickCount() == 2 && !tRow.isEmpty() ) {
+			        	FoodItem food = tRow.getItem();
+			            System.out.println("ID OF CLICKED food "+food.getId());
+			        }
+			    });
+			    return tRow ;
+			});
+			
+			//Debug
+			for(int i=1;i<1000;i++)
+			{
+				foodTableView.getItems().add(new FoodItem(i, "Gulas"+i, 25, "Jozko Mrkvicka",null));
+			}
 
 
 		} catch (IOException e) {
@@ -198,7 +234,7 @@ public class MainMenuController {
 	public void openFilterMenu()
 	{
 		try {
-			VBox root = (VBox)FXMLLoader.load(getClass().getResource("/ui/user/FilterScreen.fxml"));
+			VBox root = (VBox)FXMLLoader.load(getClass().getResource("/ui/FilterScreen.fxml"));
 			Scene scene = new Scene(root);
 			Stage primaryStage = new Stage();
 			primaryStage.setScene(scene);
