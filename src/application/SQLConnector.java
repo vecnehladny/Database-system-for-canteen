@@ -94,6 +94,7 @@ public class SQLConnector {
         return true;
     }
 
+
     //Skontroluje, ci sa v DB nachadza dany pouzivatel aj s heslom ak ano vrati objekt User
     public User getUserInDB(String email, String password)
     {
