@@ -3,23 +3,33 @@ package ui.user;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import data.FoodItem;
+import data.Ingredients;
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.input.MouseButton;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import ui.FoodFilterController;
 
 public class UserMenuController {
 
@@ -98,38 +108,65 @@ public class UserMenuController {
 				loadFoodVBox();
 			});
 			
+			//Vytvorenie moznosti pri kliku praveho tlacidla
+			MenuItem deleteMenu = new MenuItem("Delete");
+			ContextMenu menu = new ContextMenu();
+			menu.getItems().addAll(deleteMenu);
+			
 			//Nastavenie tabulky na spravne hodnoty
+			orderTableView.getItems().clear();
 			orderTableView.getColumns().get(0).setCellValueFactory(new PropertyValueFactory<>("name"));
 			orderTableView.getColumns().get(1).setCellValueFactory(new PropertyValueFactory<>("price"));
 			
 			orderTableView.setRowFactory(e -> {
 			    TableRow<FoodItem> tRow = new TableRow<>();
-			    tRow.setOnMouseClicked(event -> {
-			        if (event.getClickCount() == 2 && !tRow.isEmpty() ) {
-			        	FoodItem food = tRow.getItem();
-			            System.out.println("ID OF CLICKED food "+food.getId());
+			    tRow.setOnMouseClicked(event -> {		    	
+			    	if(tRow.isEmpty())
+			    		return;	    	
+			    	
+			    	FoodItem food = tRow.getItem();		    	
+		            //Vybratie moznosti delete
+					deleteMenu.setOnAction(new EventHandler<ActionEvent>() {
+						
+						@Override
+						public void handle(ActionEvent event) {
+							System.out.println("Deleting! "+food.getName());
+							showConfirmBox(food);
+						}
+					});
+					tRow.setContextMenu(menu);
+					
+			        if (event.getButton() == MouseButton.PRIMARY && event.getClickCount() == 2 && !tRow.isEmpty() ) {
+			            System.out.println("ID OF CLICKED chefs "+food.getId());	
+			            openDetailMenu(food);
 			        }
 			    });
 			    return tRow ;
 			});
 			
 			//Debug
+			orderItems.clear();
 			for(int i=1;i<12;i++)
 			{
 				orderItems.add(new FoodItem(i, "Gulas"+i, i, "Jozko Mrkvicka",null));
 			}
 			orderTableView.getItems().addAll(orderItems);
 			
-			//Pocitanie ceny na zaklade produktov
-			int sum=0;
-			for (FoodItem foodItem : orderItems) {
-				sum+=Integer.valueOf(foodItem.getPrice());
-			}
-			priceLabel.setText(String.valueOf(sum)+ " E");		
+			CalculateCheckoutPrice();
 			
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	private void CalculateCheckoutPrice()
+	{
+		//Pocitanie ceny na zaklade produktov
+		int sum=0;
+		for (FoodItem foodItem : orderItems) {
+			sum+=Integer.valueOf(foodItem.getPrice());
+		}
+		priceLabel.setText(String.valueOf(sum)+ " E");	
 	}
 	
 	public void loadProfileVBox()
@@ -138,7 +175,7 @@ public class UserMenuController {
 			VBox newVBox= (VBox)FXMLLoader.load(getClass().getResource("/ui/user/ProfileVBox.fxml"));
 			contentVBox.getChildren().clear();
 			contentVBox.getChildren().addAll(newVBox.getChildren());
-			
+						
 			//Nastavenie UI referencii-
 			for (Node obj : contentVBox.getChildren()) {
 				if(obj.getId().equals("nameField")){
@@ -157,6 +194,8 @@ public class UserMenuController {
 					saveChangesButton = (Button) obj;
 				}
 			}
+			
+			//TODO prednastavit aktualne hodnoty uzivatela
 			
 			saveChangesButton.setOnAction(e->{
 				System.out.println("Saved changes in profile!");
@@ -240,11 +279,33 @@ public class UserMenuController {
 		//TODO Tu by mal byt kod na zmenu filtrovania v menu
 	}
 	
+	//Vytvara upozornenie pri mazani
+	private void showConfirmBox(FoodItem food)
+	{
+		Platform.runLater(() -> {
+            ButtonType okay = new ButtonType("Delete");
+            ButtonType cancel = new ButtonType("Cancel");
+            Alert alert = new Alert(Alert.AlertType.WARNING,"",okay,cancel);
+            alert.setTitle("Continue?");
+            alert.setHeaderText("Do you really want to remove "+food.getName()+" from your order?");
+            Optional<ButtonType> result = alert.showAndWait();
+            
+            if(result.orElse(cancel) == okay)
+            {
+            	System.out.println("Pressed delete");
+            	orderItems.remove(food);
+            	orderTableView.getItems().remove(food);
+            	CalculateCheckoutPrice();
+            }
+        }
+		);
+	}
+	
 	//Otvori okno s filtrom
 	public void openFilterMenu()
 	{
 		try {
-			FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/user/FilterScreen.fxml"));
+			FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/FoodFilter.fxml"));
 			VBox root = loader.load();
 			Scene scene = new Scene(root);
 			Stage primaryStage = new Stage();
@@ -256,8 +317,8 @@ public class UserMenuController {
 			primaryStage.show();
 			
 			//Nastavenie referencie aby sa dal uplatnit filter
-			FilterScreenController filterScreenController = (FilterScreenController)loader.getController();
-			filterScreenController.setUserMenuControler(this);			
+			FoodFilterController filterScreenController = (FoodFilterController)loader.getController();
+			filterScreenController.setUserFoodFilter(this);		
 			
 		} catch(Exception e) {
 			e.printStackTrace();
@@ -269,7 +330,7 @@ public class UserMenuController {
 	private void openDetailMenu(FoodItem food)
 	{
 		try {
-			FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/user/ItemDetailScreen.fxml"));	
+			FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/ItemDetail.fxml"));	
 			VBox root = (VBox) loader.load();
 			Scene scene = new Scene(root);		
 			Stage stage = new Stage();
@@ -278,12 +339,25 @@ public class UserMenuController {
 			stage.setResizable(false);
 			stage.setTitle(DETAIL_TITLE);
 			
+			Label detailLabel;
+			detailLabel = (Label)root.getChildren().get(0);
+			
+			String textString = "Name of the food: "+food.getName()+"\nPrice: "+String.valueOf(food.getPrice())+
+					"\nChef: "+food.getChef()+"\nIngredients:\n";
+			
+			if(food.getIngredients()!= null)
+			{
+				for (Ingredients ing: food.getIngredients()) {
+					textString+=ing.getName()+"\n";
+				}
+			}
+			
+			detailLabel.setText(textString);
+						
 			//Nastavuje prioritu. Neda sa vratit naspat dokial nezavru toto okno
 			stage.initModality(Modality.APPLICATION_MODAL); 			
 			stage.show();			
-			
-			ItemDetailScreenController itemDetailScreenController = loader.getController();
-			itemDetailScreenController.loadDetails(food);			
+					
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

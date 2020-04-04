@@ -1,14 +1,18 @@
 package ui.admin;
 
 import java.io.IOException;
+import java.util.Optional;
 
 import data.User;
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
@@ -42,8 +46,7 @@ public class UserVBoxController {
 		});
 		userPreviousBtn.setOnAction(e->{
 			System.out.println("Previous btn pressed");
-		});
-		
+		});		
 		
 		//Vytvorenie moznosti pri kliku praveho tlacidla
 		MenuItem deleteMenu = new MenuItem("Delete");
@@ -70,8 +73,7 @@ public class UserVBoxController {
 					@Override
 					public void handle(ActionEvent event) {
 						System.out.println("Deleting! "+user.getName());
-						//Pridame aj overenie typu "Ste si isty?"  ?
-						//TODO vymazat zaznam usera
+						showConfirmBox(user);
 					}
 				});
 				//Vyboratie moznosti edit
@@ -88,7 +90,7 @@ public class UserVBoxController {
 		    	
 		        if (event.getButton() == MouseButton.PRIMARY && event.getClickCount() == 2 && !tRow.isEmpty() ) {
 		            //TODO zobrazit info
-		            System.out.println("ID OF CLICKED chefs "+user.getId());		            
+		            System.out.println("ID OF CLICKED user "+user.getId());		            
 		        }
 		    });
 		    return tRow ;
@@ -122,11 +124,32 @@ public class UserVBoxController {
 			stage.initModality(Modality.APPLICATION_MODAL); 			
 			stage.show();	
 			
-			con.setUser(user, stage);			
+			con.setUser(user, stage,userTableView);			
 				
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	//Vytvara upozornenie pri mazani
+	private void showConfirmBox(User user)
+	{
+		Platform.runLater(() -> {
+            ButtonType okay = new ButtonType("Delete");
+            ButtonType cancel = new ButtonType("Cancel");
+            Alert alert = new Alert(Alert.AlertType.WARNING,"",okay,cancel);
+            alert.setTitle("Continue?");
+            alert.setHeaderText("Do you really want to delete that record?");
+            Optional<ButtonType> result = alert.showAndWait();
+            
+            if(result.orElse(cancel) == okay)
+            {
+            	System.out.println("Pressed delete");
+            	userTableView.getItems().remove(user);
+            	//TODO vymazat zaznam user
+            }
+        }
+		);
 	}
 	
 }
@@ -138,7 +161,7 @@ class UsersEditController
 	@FXML CheckBox priviledgedCheckbox;
 	@FXML Button saveBtn;
 	
-	public void setUser(User user, Stage stage)
+	public void setUser(User user, Stage stage,TableView<User> table)
 	{
 		nameField.setText(user.getName());
 		addressField.setText(user.getAddress());
@@ -146,6 +169,10 @@ class UsersEditController
 		
 		saveBtn.setOnAction(e-> {
 			System.out.println("Changes saved!");
+			user.setName(nameField.getText());
+			user.setPriviledged(priviledgedCheckbox.isSelected());
+			user.setAddress(addressField.getText());
+			table.refresh();
 			//TODO ulozit zmeny usera
 			stage.close();
 		});

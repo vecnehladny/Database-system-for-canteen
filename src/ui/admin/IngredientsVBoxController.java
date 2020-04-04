@@ -1,14 +1,18 @@
 package ui.admin;
 
 import java.io.IOException;
+import java.util.Optional;
 
 import data.Ingredients;
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TableRow;
@@ -66,8 +70,7 @@ public class IngredientsVBoxController {
 					@Override
 					public void handle(ActionEvent event) {
 						System.out.println("Deleting! "+ing.getName());
-						//Pridame aj overenie typu "Ste si isty?"  ?
-						//TODO vymazat zaznam ingredients
+						showConfirmBox(ing);
 					}
 				});
 				//Vyboratie moznosti edit
@@ -118,11 +121,32 @@ public class IngredientsVBoxController {
 			stage.initModality(Modality.APPLICATION_MODAL); 			
 			stage.show();	
 			
-			con.setIng(ingredient,stage);	
+			con.setIng(ingredient,stage,ingredientTableView);	
 				
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	//Vytvara upozornenie pri mazani
+	private void showConfirmBox(Ingredients ing)
+	{
+		Platform.runLater(() -> {
+            ButtonType okay = new ButtonType("Delete");
+            ButtonType cancel = new ButtonType("Cancel");
+            Alert alert = new Alert(Alert.AlertType.WARNING,"",okay,cancel);
+            alert.setTitle("Continue?");
+            alert.setHeaderText("Do you really want to delete that record?");
+            Optional<ButtonType> result = alert.showAndWait();
+            
+            if(result.orElse(cancel) == okay)
+            {
+            	System.out.println("Pressed delete");
+            	ingredientTableView.getItems().remove(ing);
+            	//TODO vymazat zaznam ingredients
+            }
+        }
+		);
 	}
 	
 }
@@ -133,12 +157,14 @@ class IngEditController
 	@FXML TextField nameField;
 	@FXML Button saveBtn;
 	
-	public void setIng(Ingredients ing, Stage stage)
+	public void setIng(Ingredients ing, Stage stage, TableView<Ingredients> table)
 	{
 		nameField.setText(ing.getName());
 		
 		saveBtn.setOnAction(e-> {
 			System.out.println("Changes saved!");
+			ing.setName(nameField.getText());
+			table.refresh();
 			//TODO ulozit zmeny ingredients
 			stage.close();
 		});

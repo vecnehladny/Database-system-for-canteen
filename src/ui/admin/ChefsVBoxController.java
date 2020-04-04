@@ -1,14 +1,18 @@
 package ui.admin;
 
 import java.io.IOException;
+import java.util.Optional;
 
 import data.Chef;
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TableRow;
@@ -67,8 +71,7 @@ public class ChefsVBoxController {
 					@Override
 					public void handle(ActionEvent event) {
 						System.out.println("Deleting! "+chef.getName());
-						//Pridame aj overenie typu "Ste si isty?"  ?
-						//TODO vymazat zaznam chef
+						showConfirmBox(chef);
 					}
 				});
 				//Vyboratie moznosti edit
@@ -118,11 +121,32 @@ public class ChefsVBoxController {
 			stage.initModality(Modality.APPLICATION_MODAL); 			
 			stage.show();	
 			
-			chefsEditController.setChef(chef, stage);			
+			chefsEditController.setChef(chef, stage,chefsTableView);			
 				
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	//Vytvara upozornenie pri mazani
+	private void showConfirmBox(Chef chef)
+	{
+		Platform.runLater(() -> {
+            ButtonType okay = new ButtonType("Delete");
+            ButtonType cancel = new ButtonType("Cancel");
+            Alert alert = new Alert(Alert.AlertType.WARNING,"",okay,cancel);
+            alert.setTitle("Continue?");
+            alert.setHeaderText("Do you really want to delete that record?");
+            Optional<ButtonType> result = alert.showAndWait();
+            
+            if(result.orElse(cancel) == okay)
+            {
+            	System.out.println("Pressed delete");
+            	chefsTableView.getItems().remove(chef);
+            	//TODO vymazat zaznam chef
+            }
+        }
+		);
 	}
 	
 }
@@ -133,12 +157,14 @@ class ChefsEditController
 	@FXML TextField nameField;
 	@FXML Button saveBtn;
 	
-	public void setChef(Chef chef, Stage stage)
+	public void setChef(Chef chef, Stage stage, TableView<Chef> table)
 	{
 		nameField.setText(chef.getName());
 		
 		saveBtn.setOnAction(e-> {
 			System.out.println("Changes saved!");
+			chef.setName(nameField.getText());
+			table.refresh();
 			//TODO ulozit zmeny chef
 			stage.close();
 		});

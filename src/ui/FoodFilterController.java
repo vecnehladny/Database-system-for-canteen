@@ -1,8 +1,9 @@
-package ui.user;
+package ui;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import data.Ingredients;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
@@ -14,10 +15,11 @@ import javafx.scene.control.Label;
 import javafx.scene.control.MenuButton;
 import javafx.scene.control.Slider;
 import javafx.stage.Stage;
+import ui.admin.FoodVBoxController;
+import ui.user.UserMenuController;
 
-//TODO prerobit design na nieco krajsie
-//Zatial sa pouziva iba na filtrovanie jedla u USERa
-public class FilterScreenController {
+//Zatial sa pouziva iba na filtrovanie jedla
+public class FoodFilterController {
 
 	@FXML MenuButton containBox;
 	@FXML MenuButton notContainBox;
@@ -26,7 +28,8 @@ public class FilterScreenController {
 	
 	//Max cena na slider - Zistit max cenu - alebo dame fixnu?
 	float maxPrice = 20;	
-	UserMenuController userMenuController;
+	UserMenuController userMenuController = null;
+	FoodVBoxController foodVBoxController = null;
 	
 	public void initialize()
 	{
@@ -54,22 +57,25 @@ public class FilterScreenController {
 		notContainBox.setText("");
 		
 		//TODO Dorobit nacitavanie ingrendiencii z DB
-		List<String> ingredients = new ArrayList<>();
-		ingredients.add("oregano");
-		ingredients.add("paprika");
-		ingredients.add("rajciny");
-		ingredients.add("kecup");
+		List<Ingredients> ingredients = new ArrayList<>();
+		ingredients.add(new Ingredients(0, "oregano"));
+		ingredients.add(new Ingredients(0, "paprika"));
+		ingredients.add(new Ingredients(0, "kecup"));
+		ingredients.add(new Ingredients(0, "bazalka"));
+		ingredients.add(new Ingredients(0, "horcica"));
 		
 		
-		for (String string : ingredients) {
-			CheckBox cb0 = new CheckBox(string);  
+		for (Ingredients ing: ingredients) {
+			CheckBox cb0 = new CheckBox(ing.getName());  
+			cb0.setUserData(ing);
 			CustomMenuItem item0 = new CustomMenuItem(cb0); 
 			item0.setHideOnClick(false);  
 			containBox.getItems().add(item0);
 		}
 		
-		for (String string : ingredients) {
-			CheckBox cb0 = new CheckBox(string);  
+		for (Ingredients ing : ingredients) {
+			CheckBox cb0 = new CheckBox(ing.getName());  
+			cb0.setUserData(ing);
 			CustomMenuItem item0 = new CustomMenuItem(cb0); 
 			item0.setHideOnClick(false);  
 			notContainBox.getItems().add(item0);
@@ -78,15 +84,26 @@ public class FilterScreenController {
 		
 	}
 	
-	public void setUserMenuControler(UserMenuController userMenuController) {
+	public void setUserFoodFilter(UserMenuController userMenuController) {
+		foodVBoxController = null;
 		this.userMenuController = userMenuController;
 	}
 	
-	//Tato metoda zavola metodu v main menu a tam sa nastavi filtrovanie food tabulky.
+	public void setAdminFoodFilter(FoodVBoxController foodVBoxController) {
+		userMenuController=null;
+		this.foodVBoxController = foodVBoxController;
+	}
+	
+	//Tato metoda zavola metodu v food menu a tam sa nastavi filtrovanie food tabulky.
 	public void saveChanges(ActionEvent event)
 	{
 		System.out.println("Filter used!!");
-		userMenuController.changeFoodFilter();
+		if(userMenuController!=null) {
+			userMenuController.changeFoodFilter();
+		}
+		else {
+			foodVBoxController.changeFoodFilter();
+		}
 		Stage pStage = (Stage) ((Node)event.getSource()).getScene().getWindow();
 		pStage.close();
 	}
