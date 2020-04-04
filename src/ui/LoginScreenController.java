@@ -3,6 +3,7 @@ package ui;
 import java.io.IOException;
 
 import application.SQLConnector;
+import data.User;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -47,20 +48,19 @@ public class LoginScreenController {
 			return;
 		}
 		
-		//Overenie pouzivatela v DB - vrati ID ak najde alebo -1 ak nenajde
+		//Overenie pouzivatela v DB - vrati objekt User ak najde alebo null ak nenajde
 		SQLConnector connector = new SQLConnector();
 		connector.connectToDB();	
 		if(connector.isConnectedToDB())
 		{
-			//Bolo by dobre prerobit ten connector aby vracal user objekt namiesto ID.
-			int id = connector.getUserInDB(emailField.getText(), passwordField.getText());
-			if(id<0)
+			User temp = connector.getUserInDB(emailField.getText(), passwordField.getText());
+			if(temp == null)
 			{
 				showAlertBox("Email or password is wrong!");
 			}
 			else 
 			{
-				System.out.println("User ID in users table is "+id);
+				System.out.println("User ID in users table is "+ temp.getId());
 				connector.closeConnection();
 				loadMainMenuScene(event,false);
 			}

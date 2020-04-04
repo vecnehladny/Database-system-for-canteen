@@ -1,6 +1,7 @@
 package application;
 
 import java.sql.*;
+import data.User;
 
 //Tato classa sluzi na pripojenie k MySQL a vykonanie Queries
 public class SQLConnector {
@@ -93,10 +94,11 @@ public class SQLConnector {
         return true;
     }
 
-    //Skontroluje, ci sa v DB nachadza dany pouzivatel aj s heslom a vrati jeho ID
-    public int getUserInDB(String email, String password)
+
+    //Skontroluje, ci sa v DB nachadza dany pouzivatel aj s heslom ak ano vrati objekt User
+    public User getUserInDB(String email, String password)
     {
-        if(connection == null) {    return -1;}
+        if(connection == null) {    return null;}
         try {
             preparedStatement = connection
                     .prepareStatement("SELECT * FROM users WHERE EMAIL = ?");
@@ -113,16 +115,18 @@ public class SQLConnector {
 
                 if(recievedPass.equals(MD5Hashing.getSecurePassword(password))
                     && email.equals(recievedEmail)) {
-                    return resultSet.getInt("ID");
+                        User temp = new User(resultSet.getInt("ID"),resultSet.getString("NAME"),resultSet.getString("ADDRESS"),resultSet.getString("EMAIL"),resultSet.getBoolean("PRIVILEDGED"));
+                        return temp;
+                        //return resultSet.getInt("ID");
                 }
             }
         } catch (SQLException e) {
             System.out.println("Problem with checking user");
             e.printStackTrace();
-            return -1;
+            return null;
         }
 
-        return -1;
+        return null;
     }
 
     //Zmaze cely obsah tabulky - iba na test
