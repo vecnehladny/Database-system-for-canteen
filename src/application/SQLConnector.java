@@ -11,7 +11,7 @@ public class SQLConnector {
     private ResultSet resultSet = null;
    
     private String username = "root";
-    private String password = "root";
+    private String password = "infernoinferno";
     
     
     //Nacitanie drivera a pripojenie k databaze
@@ -30,6 +30,7 @@ public class SQLConnector {
         	//Localhost databaza - bude lepsia pri 1milione zaznamoch
         	connection = DriverManager
                     .getConnection("jdbc:mysql://localhost:3306/dbs_db?characterEncoding=latin1",username, password);
+            System.out.println("Database Connected");
         	
              
         } catch (SQLException e) {              	
@@ -113,8 +114,7 @@ public class SQLConnector {
                 String recievedPass = resultSet.getString("PASSWORD");
                 String recievedEmail = resultSet.getString("EMAIL");
 
-                if(recievedPass.equals(MD5Hashing.getSecurePassword(password))
-                    && email.equals(recievedEmail)) {
+                if(recievedPass.equals(MD5Hashing.getSecurePassword(password)) && email.equals(recievedEmail)) {
                         User temp = new User(resultSet.getInt("ID"),resultSet.getString("NAME"),resultSet.getString("ADDRESS"),resultSet.getString("EMAIL"),resultSet.getBoolean("PRIVILEDGED"));
                         return temp;
                         //return resultSet.getInt("ID");
@@ -162,6 +162,9 @@ public class SQLConnector {
             if (connection != null) {
                 connection.close();
             }
+
+            System.out.println("Connection Closed");
+            
         } catch (Exception e) {
             System.out.println("Error closing connection");
             e.printStackTrace();

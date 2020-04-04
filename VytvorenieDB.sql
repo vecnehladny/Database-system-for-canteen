@@ -97,4 +97,4 @@ CREATE TABLE dbs_db.bill (
 ENGINE=InnoDB
 DEFAULT CHARSET=utf8;
 
-INSERT INTO users (NAME, ADDRESS, PASSWORD, EMAIL, PRIVILEDGED) VALUES ("root", "-", "root", "root@aplikac.ia", 1);
+INSERT INTO users (NAME, ADDRESS, PASSWORD, EMAIL, PRIVILEDGED) VALUES ("root", "-", "63a9f0ea7bb98050796b649e85481845", "root@aplikac.ia", 1);

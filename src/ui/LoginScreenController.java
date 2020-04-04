@@ -41,13 +41,6 @@ public class LoginScreenController {
 			return;
 		}
 		
-		//Zatial hardcoded neskoro zmazat
-		if(passwordField.getText().equals("admin") && emailField.getText().equals("admin")) {
-			System.out.println("LOADING ADMIN ACCOUNT");
-			loadMainMenuScene(event,true);
-			return;
-		}
-		
 		//Overenie pouzivatela v DB - vrati objekt User ak najde alebo null ak nenajde
 		SQLConnector connector = new SQLConnector();
 		connector.connectToDB();	
@@ -61,8 +54,17 @@ public class LoginScreenController {
 			else 
 			{
 				System.out.println("User ID in users table is "+ temp.getId());
-				connector.closeConnection();
-				loadMainMenuScene(event,false);
+				if(temp.isPriviledged()){
+					System.out.println("LOADING ADMIN ACCOUNT");
+					connector.closeConnection();
+					loadMainMenuScene(event,true);
+					return;
+				}
+				else {
+					connector.closeConnection();
+					loadMainMenuScene(event,false);
+				}
+				
 			}
 		}
 		else 
