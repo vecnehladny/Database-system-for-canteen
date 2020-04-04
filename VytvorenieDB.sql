@@ -96,3 +96,5 @@ CREATE TABLE dbs_db.bill (
 )
 ENGINE=InnoDB
 DEFAULT CHARSET=utf8;
+
+INSERT INTO users (NAME, ADDRESS, PASSWORD, EMAIL, PRIVILEDGED) VALUES ("root", "-", "root", "root@aplikac.ia", 1);
