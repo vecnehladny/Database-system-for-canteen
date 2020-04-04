@@ -1,7 +1,11 @@
 package application;
 
 import java.sql.*;
+import java.util.ArrayList;
+
 import data.User;
+import ui.admin.FoodVBoxController;
+import data.FoodItem;
 
 //Tato classa sluzi na pripojenie k MySQL a vykonanie Queries
 public class SQLConnector {
@@ -117,7 +121,6 @@ public class SQLConnector {
                 if(recievedPass.equals(MD5Hashing.getSecurePassword(password)) && email.equals(recievedEmail)) {
                         User temp = new User(resultSet.getInt("ID"),resultSet.getString("NAME"),resultSet.getString("ADDRESS"),resultSet.getString("EMAIL"),resultSet.getBoolean("PRIVILEDGED"));
                         return temp;
-                        //return resultSet.getInt("ID");
                 }
             }
         } catch (SQLException e) {
@@ -145,6 +148,49 @@ public class SQLConnector {
             System.out.println("Problem with deleting users table");
             e.printStackTrace();
         }
+    }
+
+    public ArrayList<FoodItem> getFoodListFromDB(int page){
+        
+        if(connection == null) {    return null;}
+
+        int startFrom = (page - 1) * (int)FoodVBoxController.RESULTSPERPAGE;
+        ArrayList<FoodItem> foodList = new ArrayList<FoodItem>();
+
+        try {
+            //zistim kolko je zaznamov v tabulke 
+            preparedStatement = connection.prepareStatement("SELECT COUNT(*) FROM food");
+            resultSet = preparedStatement.executeQuery();
+            while(resultSet.next()){
+                FoodVBoxController.numberOfRecords = resultSet.getInt(1);
+            }
+
+            FoodVBoxController.totalPages = Math.ceil(FoodVBoxController.numberOfRecords / FoodVBoxController.RESULTSPERPAGE);
+
+            //vyberiem z tabulky potrebny pocet zaznamov na stranu
+            preparedStatement = connection.prepareStatement("SELECT * FROM food ORDER BY ID ASC LIMIT ? , ?");
+            preparedStatement.setInt(1, startFrom);
+            preparedStatement.setInt(2, (int)FoodVBoxController.RESULTSPERPAGE);
+            resultSet = preparedStatement.executeQuery();
+
+            while(resultSet.next()){
+                //TODO dorobit nacitavanie kuchara a ingrediencie;
+                FoodItem temp = new FoodItem(resultSet.getInt("ID"),resultSet.getString("NAME"),resultSet.getInt("PRICE"),"Blank",null);
+
+                foodList.add(temp);
+            }
+
+            return foodList;
+
+        } catch (SQLException e) {
+            System.out.println("Problem with loading food from database");
+            e.printStackTrace();
+            return null;
+        }
+
+        
+
+
     }
 
     //Zavrie otvorene pripojenia

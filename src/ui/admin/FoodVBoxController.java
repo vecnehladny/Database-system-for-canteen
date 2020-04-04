@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import application.SQLConnector;
 
 import data.FoodItem;
 import data.Ingredients;
@@ -36,6 +37,10 @@ public class FoodVBoxController {
 
 	@FXML Button foodFilterBtn,foodNextBtn,foodPreviousBtn;	
 	@FXML TableView<FoodItem> foodTableView;
+	public static int page = 1;
+	public static double totalPages;
+	public static double numberOfRecords;
+	public static final double RESULTSPERPAGE = 23;
 	
 	public void initialize()
 	{
@@ -47,10 +52,18 @@ public class FoodVBoxController {
 		
 		//Pridat funkcie addFood, next a previous - aby sme nezobrazili 1milion zaznamom naraz
 		foodNextBtn.setOnAction(e->{
-			System.out.println("Next btn pressed");
+			if(page < totalPages){
+				page++;
+				System.out.println("idem na stranu: " + page);
+				update(page);
+			}
 		});
 		foodPreviousBtn.setOnAction(e->{
-			System.out.println("Previous btn pressed");
+			if(page > 1){
+				page--;
+				System.out.println("idem na stranu: " + page);
+				update(page);
+			}
 		});
 		
 		//Vytvorenie moznosti pri kliku praveho tlacidla
@@ -101,14 +114,22 @@ public class FoodVBoxController {
 		    return tRow ;
 		});	
 		
-		//TODO pridat nacitanie jedla z DB
+		update(page);
 		
-		//Debug
-		for(int i=1;i<1000;i++)
-		{
-			foodTableView.getItems().add(new FoodItem(i, "Gulas"+i, 25, "Jozko Mrkvicka",null));
-		}
+	}
 
+	public void update(int page){
+		foodTableView.getItems().clear();
+		SQLConnector connector = new SQLConnector();
+		connector.connectToDB();
+		if(connector.isConnectedToDB())
+		{
+			ArrayList<FoodItem> foodList = connector.getFoodListFromDB(page);
+
+			for(FoodItem f : foodList){
+				foodTableView.getItems().add(f);
+			}
+		}
 	}
 	
 	public void changeFoodFilter(){
