@@ -9,9 +9,9 @@ public class FoodItem {
 	private String name;
 	private int price;
 	private String chef;
-	private List<Ingredients> ingredients = new ArrayList<>();
+	private ArrayList<Ingredients> ingredients = new ArrayList<Ingredients>();
 	
-	public FoodItem(int id, String name, int price, String chef, List<Ingredients> ingredients) {
+	public FoodItem(int id, String name, int price, String chef, ArrayList<Ingredients> ingredients) {
 		super();
 		this.id = id;
 		this.name = name;
@@ -56,7 +56,7 @@ public class FoodItem {
 		return ingredients;
 	}
 
-	public void setIngredients(List<Ingredients> ingredients) {
+	public void setIngredients(ArrayList<Ingredients> ingredients) {
 		this.ingredients = ingredients;
 	}
 	

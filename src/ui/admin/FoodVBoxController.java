@@ -306,7 +306,7 @@ class FoodEditController
 			}
 			food.setChef(chefField.getText());
 			
-			List<Ingredients> newList = new ArrayList<>();			
+			ArrayList<Ingredients> newList = new ArrayList<Ingredients>();			
 			for (MenuItem custom : containBox.getItems()) {
 				CheckBox item = (CheckBox)((CustomMenuItem)custom).getContent();
 				if(item.isSelected()) {

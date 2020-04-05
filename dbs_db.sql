@@ -11,7 +11,7 @@
  Target Server Version : 80019
  File Encoding         : 65001
 
- Date: 05/04/2020 19:38:08
+ Date: 05/04/2020 23:38:36
 */
 
 SET NAMES utf8mb4;
@@ -163,12 +163,18 @@ CREATE TABLE `food_ingredients` (
   KEY `fi_ingredients` (`INGREDIENTS_ID`),
   CONSTRAINT `fi_food` FOREIGN KEY (`FOOD_ID`) REFERENCES `food` (`ID`),
   CONSTRAINT `fi_ingredients` FOREIGN KEY (`INGREDIENTS_ID`) REFERENCES `ingredients` (`ID`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Records of food_ingredients
 -- ----------------------------
 BEGIN;
+INSERT INTO `food_ingredients` VALUES (1, 1, 1);
+INSERT INTO `food_ingredients` VALUES (2, 1, 2);
+INSERT INTO `food_ingredients` VALUES (3, 11, 3);
+INSERT INTO `food_ingredients` VALUES (4, 12, 3);
+INSERT INTO `food_ingredients` VALUES (5, 15, 3);
+INSERT INTO `food_ingredients` VALUES (6, 19, 3);
 COMMIT;
 
 -- ----------------------------
@@ -202,12 +208,17 @@ CREATE TABLE `ingredients` (
   `NAME` varchar(45) NOT NULL,
   PRIMARY KEY (`ID`),
   UNIQUE KEY `NAME_UNIQUE` (`NAME`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Records of ingredients
 -- ----------------------------
 BEGIN;
+INSERT INTO `ingredients` VALUES (2, 'Bryndza');
+INSERT INTO `ingredients` VALUES (3, 'Cesto');
+INSERT INTO `ingredients` VALUES (5, 'Maslo');
+INSERT INTO `ingredients` VALUES (4, 'Paradajky');
+INSERT INTO `ingredients` VALUES (1, 'Zemiaky');
 COMMIT;
 
 -- ----------------------------

@@ -3,7 +3,6 @@ package application;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.*;
 import java.util.ArrayList;
-import java.util.List;
 import ui.Paging;
 
 import data.User;
@@ -171,26 +170,34 @@ public class SQLConnector {
             f.setTotalPages(Math.ceil(f.getNumberOfRecords() / f.getResultsPerPage()));
 
             //vyberiem z tabulky potrebny pocet zaznamov na stranu
-            preparedStatement = connection.prepareStatement(
-                "SELECT f.ID, f.NAME, f.PRICE, ch.ID, ch.NAME, fc.ID, fc.CHEF_ID, fc.FOOD_ID "
-                +"FROM food_chef fc "
-                +"INNER JOIN chefs ch ON fc.CHEF_ID = ch.ID "
-                +"INNER JOIN food f ON fc.FOOD_ID = f.ID "
-                +"ORDER BY fc.ID ASC LIMIT ?, ?"
-            );
+            preparedStatement = connection.prepareStatement("SELECT f.ID, f.NAME, f.PRICE, ch.NAME, GROUP_CONCAT(i.name) FROM food f JOIN food_chef fc ON fc.FOOD_ID = f.ID JOIN chefs ch ON ch.ID = fc.CHEF_ID LEFT JOIN food_ingredients fi ON fi.FOOD_ID = f.ID LEFT JOIN ingredients i ON fi.INGREDIENTS_ID = i.ID GROUP BY fc.ID ORDER BY fc.ID ASC LIMIT ?, ?");
             preparedStatement.setInt(1, startFrom);
             preparedStatement.setInt(2, (int)(f.getResultsPerPage()));
             resultSet = preparedStatement.executeQuery();
 
             while(resultSet.next()){
-                //TODO dorobit nacitavanie kuchara a ingrediencie;
                 int id = resultSet.getInt(1);
                 String name = resultSet.getString(2);
                 int price = resultSet.getInt(3);
-                String chef = resultSet.getString(5);
-                List<Ingredients> ingredients = null;
+                String chef = resultSet.getString(4);
+                String ingredientsString = resultSet.getString(5);
+                ArrayList<Ingredients> ingredient = new ArrayList<Ingredients>();
                 
-                foodList.add(new FoodItem(id,name,price,chef,ingredients));
+                if(ingredientsString == null){
+                    ingredient.clear();
+                }
+                else {
+                    if(ingredientsString.contains(",")){
+                        String[] splitted = ingredientsString.split(",");
+                        for(String s : splitted){
+                            ingredient.add(new Ingredients(s));
+                        }
+                    }
+                    else {
+                        ingredient.add(new Ingredients(ingredientsString));
+                    }   
+                }
+                foodList.add(new FoodItem(id,name,price,chef,ingredient));
             }
 
             return foodList;
