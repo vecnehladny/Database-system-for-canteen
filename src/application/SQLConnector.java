@@ -171,17 +171,23 @@ public class SQLConnector {
             f.setTotalPages(Math.ceil(f.getNumberOfRecords() / f.getResultsPerPage()));
 
             //vyberiem z tabulky potrebny pocet zaznamov na stranu
-            preparedStatement = connection.prepareStatement("SELECT * FROM food ORDER BY ID ASC LIMIT ? , ?");
+            preparedStatement = connection.prepareStatement(
+                "SELECT f.ID, f.NAME, f.PRICE, ch.ID, ch.NAME, fc.ID, fc.CHEF_ID, fc.FOOD_ID "
+                +"FROM food_chef fc "
+                +"INNER JOIN chefs ch ON fc.CHEF_ID = ch.ID "
+                +"INNER JOIN food f ON fc.FOOD_ID = f.ID "
+                +"ORDER BY fc.ID ASC LIMIT ?, ?"
+            );
             preparedStatement.setInt(1, startFrom);
             preparedStatement.setInt(2, (int)(f.getResultsPerPage()));
             resultSet = preparedStatement.executeQuery();
 
             while(resultSet.next()){
                 //TODO dorobit nacitavanie kuchara a ingrediencie;
-                int id = resultSet.getInt("ID");
-                String name = resultSet.getString("NAME");
-                int price = resultSet.getInt("PRICE");
-                String chef = "Blank";
+                int id = resultSet.getInt(1);
+                String name = resultSet.getString(2);
+                int price = resultSet.getInt(3);
+                String chef = resultSet.getString(5);
                 List<Ingredients> ingredients = null;
                 
                 foodList.add(new FoodItem(id,name,price,chef,ingredients));
@@ -227,7 +233,7 @@ public class SQLConnector {
             return chefList;
 
         } catch (SQLException e) {
-            System.out.println("Problem with loading food from database");
+            System.out.println("Problem with loading chefs from database");
             e.printStackTrace();
             return null;
         }
