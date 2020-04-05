@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import application.SQLConnector;
+import ui.Paging;
 
 import data.FoodItem;
 import data.Ingredients;
@@ -33,112 +34,110 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import ui.FoodFilterController;
 
-public class FoodVBoxController {
+public class FoodVBoxController extends Paging {
 
-	@FXML Button foodFilterBtn,foodNextBtn,foodPreviousBtn;	
-	@FXML TableView<FoodItem> foodTableView;
-	public static int page = 1;
-	public static double totalPages;
-	public static double numberOfRecords;
-	public static final double RESULTSPERPAGE = 23;
-	
-	public void initialize()
-	{
+	@FXML
+	Button foodFilterBtn, foodNextBtn, foodPreviousBtn;
+	@FXML
+	TableView<FoodItem> foodTableView;
+
+	public void initialize() {
 		System.out.println("initialize() foodVBoxController");
-		
-		foodFilterBtn.setOnAction(e->{
+
+		foodFilterBtn.setOnAction(e -> {
 			openFilterMenu();
-		});	
-		
-		//Pridat funkcie addFood, next a previous - aby sme nezobrazili 1milion zaznamom naraz
-		foodNextBtn.setOnAction(e->{
-			if(page < totalPages){
-				page++;
-				System.out.println("idem na stranu: " + page);
-				update(page);
+		});
+
+		// Pridat funkcie addFood, next a previous - aby sme nezobrazili 1milion
+		// zaznamom naraz
+		foodNextBtn.setOnAction(e -> {
+			System.out.println(getPage() + " " + getTotalPages());
+			if (getPage() < getTotalPages()) {
+				incrementPage();
+				System.out.println("idem na stranu: " + getPage());
+				update();
 			}
 		});
-		foodPreviousBtn.setOnAction(e->{
-			if(page > 1){
-				page--;
-				System.out.println("idem na stranu: " + page);
-				update(page);
+		foodPreviousBtn.setOnAction(e -> {
+			if (getPage() > 1) {
+				decrementPage();
+				System.out.println("idem na stranu: " + getPage());
+				update();
 			}
 		});
-		
-		//Vytvorenie moznosti pri kliku praveho tlacidla
+
+		// Vytvorenie moznosti pri kliku praveho tlacidla
 		MenuItem deleteMenu = new MenuItem("Delete");
 		MenuItem editMenu = new MenuItem("Edit");
 		ContextMenu menu = new ContextMenu();
-		menu.getItems().addAll(editMenu,deleteMenu);
-		
-		//Set up table
+		menu.getItems().addAll(editMenu, deleteMenu);
+
+		// Set up table
 		foodTableView.getColumns().get(0).setCellValueFactory(new PropertyValueFactory<>("name"));
 		foodTableView.getColumns().get(1).setCellValueFactory(new PropertyValueFactory<>("price"));
 		foodTableView.getColumns().get(2).setCellValueFactory(new PropertyValueFactory<>("chef"));
-		
+
 		foodTableView.setRowFactory(e -> {
 			TableRow<FoodItem> tRow = new TableRow<>();
-		    tRow.setOnMouseClicked(event -> {
-		    	
-		    	if(tRow.isEmpty())
-		    		return;	    	
-		    	FoodItem food= tRow.getItem();
-	            
-	            //Vybratie moznosti delete
+			tRow.setOnMouseClicked(event -> {
+
+				if (tRow.isEmpty())
+					return;
+				FoodItem food = tRow.getItem();
+
+				// Vybratie moznosti delete
 				deleteMenu.setOnAction(new EventHandler<ActionEvent>() {
-					
+
 					@Override
 					public void handle(ActionEvent event) {
-						System.out.println("Deleting! "+food.getName());
+						System.out.println("Deleting! " + food.getName());
 						showConfirmBox(food);
 					}
 				});
-				//Vyboratie moznosti edit
+				// Vyboratie moznosti edit
 				editMenu.setOnAction(new EventHandler<ActionEvent>() {
 
 					@Override
 					public void handle(ActionEvent event) {
-						System.out.println("Editing! "+food.getName());	
+						System.out.println("Editing! " + food.getName());
 						openEditMenu(food);
 					}
 				});
-		    	
-		        tRow.setContextMenu(menu);
-		    	
-		        if (event.getButton() == MouseButton.PRIMARY && event.getClickCount() == 2 && !tRow.isEmpty() ) {
-		            System.out.println("ID OF CLICKED food "+food.getId());		     
-		            openDetailMenu(food);
-		        }
-		    });
-		    return tRow ;
-		});	
-		
-		update(page);
-		
+
+				tRow.setContextMenu(menu);
+
+				if (event.getButton() == MouseButton.PRIMARY && event.getClickCount() == 2 && !tRow.isEmpty()) {
+					System.out.println("ID OF CLICKED food " + food.getId());
+					openDetailMenu(food);
+				}
+			});
+			return tRow;
+		});
+
+		update();
+
 	}
 
-	public void update(int page){
+	public void update() {
 		foodTableView.getItems().clear();
 		SQLConnector connector = new SQLConnector();
 		connector.connectToDB();
-		if(connector.isConnectedToDB())
-		{
-			ArrayList<FoodItem> foodList = connector.getFoodListFromDB(page);
+		if (connector.isConnectedToDB()) {
+			ArrayList<FoodItem> foodList = connector.getFoodListFromDB(this);
 
-			for(FoodItem f : foodList){
+			for (FoodItem f : foodList) {
 				foodTableView.getItems().add(f);
 			}
 		}
+		connector.closeConnection();
 	}
-	
-	public void changeFoodFilter(){
-		//TODO Tu by mal byt kod na zmenu filtrovania jedla
+
+	public void changeFoodFilter() {
+		// TODO Tu by mal byt kod na zmenu filtrovania jedla
 	}
-	
-	//Otvori okno s filtrom
-	public void openFilterMenu()
-	{
+
+	// Otvori okno s filtrom
+	public void openFilterMenu() {
 		try {
 			FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/FoodFilter.fxml"));
 			VBox root = loader.load();
@@ -147,103 +146,97 @@ public class FoodVBoxController {
 			primaryStage.setScene(scene);
 			primaryStage.setResizable(false);
 			primaryStage.setTitle("Filter");
-			//Nastavuje prioritu. Neda sa vratit naspat dokial nezavru toto okno
-			primaryStage.initModality(Modality.APPLICATION_MODAL); 
+			// Nastavuje prioritu. Neda sa vratit naspat dokial nezavru toto okno
+			primaryStage.initModality(Modality.APPLICATION_MODAL);
 			primaryStage.show();
-			
-			//Nastavenie referencie aby sa dal uplatnit filter
-			FoodFilterController filterScreenController = (FoodFilterController)loader.getController();
-			filterScreenController.setAdminFoodFilter(this);	
-			
-		} catch(Exception e) {
+
+			// Nastavenie referencie aby sa dal uplatnit filter
+			FoodFilterController filterScreenController = (FoodFilterController) loader.getController();
+			filterScreenController.setAdminFoodFilter(this);
+
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
-	}	
+	}
 
-	private void openEditMenu(FoodItem food)
-	{
+	private void openEditMenu(FoodItem food) {
 		try {
-			FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/admin/edit/FoodEditPopup.fxml"));	
+			FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/admin/edit/FoodEditPopup.fxml"));
 			FoodEditController con = new FoodEditController();
 			loader.setController(con);
 			VBox root = (VBox) loader.load();
-			Scene scene = new Scene(root);		
+			Scene scene = new Scene(root);
 			Stage stage = new Stage();
-		
+
 			stage.setScene(scene);
 			stage.setResizable(false);
-			stage.setTitle("Editing "+food.getName());
-		
-			//Nastavuje prioritu. Neda sa vratit naspat dokial nezavru toto okno
-			stage.initModality(Modality.APPLICATION_MODAL); 			
-			stage.show();	
-		
-			con.setFood(food, stage,foodTableView);			
-			
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-	
-	//Vytvara upozornenie pri mazani
-	private void showConfirmBox(FoodItem item)
-	{
-		Platform.runLater(() -> {
-            ButtonType okay = new ButtonType("Delete");
-            ButtonType cancel = new ButtonType("Cancel");
-            Alert alert = new Alert(Alert.AlertType.WARNING,"",okay,cancel);
-            alert.setTitle("Continue?");
-            alert.setHeaderText("Do you really want to delete that record?");
-            Optional<ButtonType> result = alert.showAndWait();
-            
-            if(result.orElse(cancel) == okay)
-            {
-            	System.out.println("Pressed delete");
-            	foodTableView.getItems().remove(item);
-            	//TODO vymazat zaznam food
-            }
-        }
-		);
-	}
-	
-	//Vytvori nove okno s detailom o polozke
-	private String DETAIL_TITLE = "Detail o polozke";
-	private void openDetailMenu(FoodItem food)
-	{
-		try {
-			FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/ItemDetail.fxml"));	
-			VBox root = (VBox) loader.load();
-			Scene scene = new Scene(root);		
-			Stage stage = new Stage();
-			
-			stage.setScene(scene);
-			stage.setResizable(false);
-			stage.setTitle(DETAIL_TITLE);
-			
-			Label detailLabel;
-			detailLabel = (Label)root.getChildren().get(0);
-			
-			String textString = "Name of the food: "+food.getName()+"\nPrice: "+String.valueOf(food.getPrice())+
-					"\nChef: "+food.getChef()+"\nIngredients:\n";
-			
-			if(food.getIngredients()!= null)
-			{
-				for (Ingredients ing: food.getIngredients()) {
-					textString+=ing.getName()+"\n";
-				}
-			}
-			
-			detailLabel.setText(textString);
-						
-			//Nastavuje prioritu. Neda sa vratit naspat dokial nezavru toto okno
-			stage.initModality(Modality.APPLICATION_MODAL); 			
-			stage.show();			
-					
+			stage.setTitle("Editing " + food.getName());
+
+			// Nastavuje prioritu. Neda sa vratit naspat dokial nezavru toto okno
+			stage.initModality(Modality.APPLICATION_MODAL);
+			stage.show();
+
+			con.setFood(food, stage, foodTableView);
+
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
 
+	// Vytvara upozornenie pri mazani
+	private void showConfirmBox(FoodItem item) {
+		Platform.runLater(() -> {
+			ButtonType okay = new ButtonType("Delete");
+			ButtonType cancel = new ButtonType("Cancel");
+			Alert alert = new Alert(Alert.AlertType.WARNING, "", okay, cancel);
+			alert.setTitle("Continue?");
+			alert.setHeaderText("Do you really want to delete that record?");
+			Optional<ButtonType> result = alert.showAndWait();
+
+			if (result.orElse(cancel) == okay) {
+				System.out.println("Pressed delete");
+				foodTableView.getItems().remove(item);
+				// TODO vymazat zaznam food
+			}
+		});
+	}
+
+	// Vytvori nove okno s detailom o polozke
+	private String DETAIL_TITLE = "Detail o polozke";
+
+	private void openDetailMenu(FoodItem food) {
+		try {
+			FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/ItemDetail.fxml"));
+			VBox root = (VBox) loader.load();
+			Scene scene = new Scene(root);
+			Stage stage = new Stage();
+
+			stage.setScene(scene);
+			stage.setResizable(false);
+			stage.setTitle(DETAIL_TITLE);
+
+			Label detailLabel;
+			detailLabel = (Label) root.getChildren().get(0);
+
+			String textString = "Name of the food: " + food.getName() + "\nPrice: " + String.valueOf(food.getPrice())
+					+ "\nChef: " + food.getChef() + "\nIngredients:\n";
+
+			if (food.getIngredients() != null) {
+				for (Ingredients ing : food.getIngredients()) {
+					textString += ing.getName() + "\n";
+				}
+			}
+
+			detailLabel.setText(textString);
+
+			// Nastavuje prioritu. Neda sa vratit naspat dokial nezavru toto okno
+			stage.initModality(Modality.APPLICATION_MODAL);
+			stage.show();
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
 }
 
 //Toto je controller pre edit menu

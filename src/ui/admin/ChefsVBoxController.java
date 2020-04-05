@@ -1,7 +1,11 @@
 package ui.admin;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Optional;
+
+import application.SQLConnector;
+import ui.Paging;
 
 import data.Chef;
 import javafx.application.Platform;
@@ -25,7 +29,7 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 
-public class ChefsVBoxController {
+public class ChefsVBoxController extends Paging {
 
 	@FXML Button chefsSearchBtn,chefsNextBtn,chefsPreviousBtn;	
 	@FXML TableView<Chef> chefsTableView;
@@ -97,10 +101,21 @@ public class ChefsVBoxController {
 		//TODO pridat nacitanie z DB
 		
 		//Debug
-		for(int i=1;i<1000;i++)
-		{
-			chefsTableView.getItems().add(new Chef(i,"Janko Mrkvicka "+i));
+		update();
+	}
+
+	public void update() {
+		chefsTableView.getItems().clear();
+		SQLConnector connector = new SQLConnector();
+		connector.connectToDB();
+		if (connector.isConnectedToDB()) {
+			ArrayList<Chef> chefList = connector.getChefListFromDB(this);
+
+			for (Chef ch : chefList) {
+				chefsTableView.getItems().add(ch);
+			}
 		}
+		connector.closeConnection();
 	}
 	
 	private void openEditMenu(Chef chef)

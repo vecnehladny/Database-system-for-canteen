@@ -1,11 +1,17 @@
 package application;
 
+import java.lang.reflect.InvocationTargetException;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.List;
+import ui.Paging;
 
 import data.User;
+import ui.admin.ChefsVBoxController;
 import ui.admin.FoodVBoxController;
+import data.Chef;
 import data.FoodItem;
+import data.Ingredients;
 
 //Tato classa sluzi na pripojenie k MySQL a vykonanie Queries
 public class SQLConnector {
@@ -150,34 +156,35 @@ public class SQLConnector {
         }
     }
 
-    public ArrayList<FoodItem> getFoodListFromDB(int page){
+    public ArrayList<FoodItem> getFoodListFromDB(FoodVBoxController f){
         
         if(connection == null) {    return null;}
 
-        int startFrom = (page - 1) * (int)FoodVBoxController.RESULTSPERPAGE;
+        int startFrom = (f.getPage() - 1) * (int)(f.getResultsPerPage());
         ArrayList<FoodItem> foodList = new ArrayList<FoodItem>();
 
         try {
             //zistim kolko je zaznamov v tabulke 
-            preparedStatement = connection.prepareStatement("SELECT COUNT(*) FROM food");
-            resultSet = preparedStatement.executeQuery();
-            while(resultSet.next()){
-                FoodVBoxController.numberOfRecords = resultSet.getInt(1);
-            }
+            f.setNumberOfRecords(getRecordNumberFromDB("food"));
 
-            FoodVBoxController.totalPages = Math.ceil(FoodVBoxController.numberOfRecords / FoodVBoxController.RESULTSPERPAGE);
+            //Pocet stran na ktore rozdelim zaznamy
+            f.setTotalPages(Math.ceil(f.getNumberOfRecords() / f.getResultsPerPage()));
 
             //vyberiem z tabulky potrebny pocet zaznamov na stranu
             preparedStatement = connection.prepareStatement("SELECT * FROM food ORDER BY ID ASC LIMIT ? , ?");
             preparedStatement.setInt(1, startFrom);
-            preparedStatement.setInt(2, (int)FoodVBoxController.RESULTSPERPAGE);
+            preparedStatement.setInt(2, (int)(f.getResultsPerPage()));
             resultSet = preparedStatement.executeQuery();
 
             while(resultSet.next()){
                 //TODO dorobit nacitavanie kuchara a ingrediencie;
-                FoodItem temp = new FoodItem(resultSet.getInt("ID"),resultSet.getString("NAME"),resultSet.getInt("PRICE"),"Blank",null);
-
-                foodList.add(temp);
+                int id = resultSet.getInt("ID");
+                String name = resultSet.getString("NAME");
+                int price = resultSet.getInt("PRICE");
+                String chef = "Blank";
+                List<Ingredients> ingredients = null;
+                
+                foodList.add(new FoodItem(id,name,price,chef,ingredients));
             }
 
             return foodList;
@@ -188,9 +195,62 @@ public class SQLConnector {
             return null;
         }
 
+    }
+
+    public ArrayList<Chef> getChefListFromDB(ChefsVBoxController f){
         
+        if(connection == null) {    return null;}
 
+        int startFrom = (f.getPage() - 1) * (int)(f.getResultsPerPage());
+        ArrayList<Chef> chefList = new ArrayList<Chef>();
 
+        try {
+            //zistim kolko je zaznamov v tabulke
+            f.setNumberOfRecords(getRecordNumberFromDB("chefs"));
+            
+            //Pocet stran na ktore rozdelim zaznamy
+            f.setTotalPages(Math.ceil(f.getNumberOfRecords() / f.getResultsPerPage()));
+
+            //vyberiem z tabulky potrebny pocet zaznamov na konkretnu stranu
+            preparedStatement = connection.prepareStatement("SELECT * FROM chefs ORDER BY ID ASC LIMIT ? , ?");
+            preparedStatement.setInt(1, startFrom);
+            preparedStatement.setInt(2, (int)(f.getResultsPerPage()));
+            resultSet = preparedStatement.executeQuery();
+
+            while(resultSet.next()){
+                int id = resultSet.getInt("ID");
+                String name = resultSet.getString("NAME");
+                
+                chefList.add(new Chef(id,name));
+            }
+
+            return chefList;
+
+        } catch (SQLException e) {
+            System.out.println("Problem with loading food from database");
+            e.printStackTrace();
+            return null;
+        }
+
+    }
+
+    public int getRecordNumberFromDB(String table){
+        if(connection == null) {return 0;}
+        int count = 0;
+
+        try {
+            preparedStatement = connection.prepareStatement("SELECT COUNT(*) FROM " + table);
+            resultSet = preparedStatement.executeQuery();
+
+            while(resultSet.next()){
+                count = resultSet.getInt(1);
+                System.out.println(count);
+            }
+            return count;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return count;
+        }
     }
 
     //Zavrie otvorene pripojenia
