@@ -34,7 +34,9 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import ui.FoodFilterController;
 
-public class FoodVBoxController extends Paging {
+public class FoodVBoxController {
+
+	public Paging paging = new Paging(); 
 
 	@FXML
 	Button foodFilterBtn, foodNextBtn, foodPreviousBtn;
@@ -51,17 +53,17 @@ public class FoodVBoxController extends Paging {
 		// Pridat funkcie addFood, next a previous - aby sme nezobrazili 1milion
 		// zaznamom naraz
 		foodNextBtn.setOnAction(e -> {
-			System.out.println(getPage() + " " + getTotalPages());
-			if (getPage() < getTotalPages()) {
-				incrementPage();
-				System.out.println("idem na stranu: " + getPage());
+			System.out.println(paging.getPage() + " " + paging.getTotalPages());
+			if (paging.getPage() < paging.getTotalPages()) {
+				paging.incrementPage();
+				System.out.println("idem na stranu: " + paging.getPage());
 				update();
 			}
 		});
 		foodPreviousBtn.setOnAction(e -> {
-			if (getPage() > 1) {
-				decrementPage();
-				System.out.println("idem na stranu: " + getPage());
+			if (paging.getPage() > 1) {
+				paging.decrementPage();
+				System.out.println("idem na stranu: " + paging.getPage());
 				update();
 			}
 		});
@@ -123,7 +125,7 @@ public class FoodVBoxController extends Paging {
 		SQLConnector connector = new SQLConnector();
 		connector.connectToDB();
 		if (connector.isConnectedToDB()) {
-			ArrayList<FoodItem> foodList = connector.getFoodListFromDB(this);
+			ArrayList<FoodItem> foodList = connector.getFoodListFromDB(paging);
 
 			for (FoodItem f : foodList) {
 				foodTableView.getItems().add(f);

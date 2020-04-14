@@ -1,6 +1,6 @@
 package ui;
 
-public abstract class Paging {
+public class Paging {
 
     private int page = 1;
 	  private double totalPages;

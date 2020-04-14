@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import application.SQLConnector;
 import data.FoodItem;
 import data.Ingredients;
 import javafx.application.Platform;
@@ -30,8 +31,11 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import ui.FoodFilterController;
+import ui.Paging;
 
 public class UserMenuController {
+
+	public Paging paging = new Paging(); 
 
 	@FXML Button profileButton;
 	@FXML Button foodButton;
@@ -238,10 +242,18 @@ public class UserMenuController {
 			
 			//Pridat funckie next a previous - aby sme nezobrazili 1milion zaznamom naraz
 			foodNextBtn.setOnAction(e->{
-				System.out.println("Next btn pressed");
+				if (paging.getPage() < paging.getTotalPages()) {
+					paging.incrementPage();
+					System.out.println("idem na stranu: " + paging.getPage());
+					update();
+				}
 			});
 			foodPreviousBtn.setOnAction(e->{
-				System.out.println("Previous btn pressed");
+				if (paging.getPage() > 1) {
+					paging.decrementPage();
+					System.out.println("idem na stranu: " + paging.getPage());
+					update();
+				}
 			});
 			
 			//Nacitanie tabulky
@@ -261,18 +273,26 @@ public class UserMenuController {
 			    return tRow ;
 			});
 			
-			//TODO tu by malo byt nacitanie jedla z DB
-			
-			//Debug
-			for(int i=1;i<1000;i++)
-			{
-				foodTableView.getItems().add(new FoodItem(i, "Gulas"+i, 25, "Jozko Mrkvicka",null));
-			}
+			update();
 
 
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+
+	public void update() {
+		foodTableView.getItems().clear();
+		SQLConnector connector = new SQLConnector();
+		connector.connectToDB();
+		if (connector.isConnectedToDB()) {
+			ArrayList<FoodItem> foodList = connector.getFoodListFromDB(paging);
+
+			for (FoodItem f : foodList) {
+				foodTableView.getItems().add(f);
+			}
+		}
+		connector.closeConnection();
 	}
 	
 	public void changeFoodFilter(){

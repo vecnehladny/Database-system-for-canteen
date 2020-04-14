@@ -3,6 +3,8 @@ package application;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.*;
 import java.util.ArrayList;
+
+import ui.Controller;
 import ui.Paging;
 
 import data.User;
@@ -155,7 +157,7 @@ public class SQLConnector {
         }
     }
 
-    public ArrayList<FoodItem> getFoodListFromDB(FoodVBoxController f){
+    public ArrayList<FoodItem> getFoodListFromDB(Paging f){
         
         if(connection == null) {    return null;}
 
