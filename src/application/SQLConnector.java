@@ -4,7 +4,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.sql.*;
 import java.util.ArrayList;
 
-import ui.Controller;
 import ui.Paging;
 
 import data.User;
@@ -12,7 +11,7 @@ import ui.admin.ChefsVBoxController;
 import ui.admin.FoodVBoxController;
 import data.Chef;
 import data.FoodItem;
-import data.Ingredients;
+import data.Ingredient;
 
 //Tato classa sluzi na pripojenie k MySQL a vykonanie Queries
 public class SQLConnector {
@@ -183,7 +182,7 @@ public class SQLConnector {
                 int price = resultSet.getInt(3);
                 String chef = resultSet.getString(4);
                 String ingredientsString = resultSet.getString(5);
-                ArrayList<Ingredients> ingredient = new ArrayList<Ingredients>();
+                ArrayList<Ingredient> ingredient = new ArrayList<Ingredient>();
                 
                 if(ingredientsString == null){
                     ingredient.clear();
@@ -192,11 +191,11 @@ public class SQLConnector {
                     if(ingredientsString.contains(",")){
                         String[] splitted = ingredientsString.split(",");
                         for(String s : splitted){
-                            ingredient.add(new Ingredients(s));
+                            ingredient.add(new Ingredient(s));
                         }
                     }
                     else {
-                        ingredient.add(new Ingredients(ingredientsString));
+                        ingredient.add(new Ingredient(ingredientsString));
                     }   
                 }
                 foodList.add(new FoodItem(id,name,price,chef,ingredient));
@@ -266,6 +265,35 @@ public class SQLConnector {
             e.printStackTrace();
             return count;
         }
+    }
+
+    public ArrayList<Ingredient> getIngredientsListFromDB(){
+        
+        if(connection == null) {    return null;}
+
+        ArrayList<Ingredient> ingredientsList = new ArrayList<Ingredient>();
+
+        try {
+
+            //vyberiem z tabulky potrebny pocet zaznamov na stranu
+            preparedStatement = connection.prepareStatement("SELECT * FROM ingredients");
+            resultSet = preparedStatement.executeQuery();
+
+            while(resultSet.next()){
+                int id = resultSet.getInt(1);
+                String name = resultSet.getString(2);
+                
+                ingredientsList.add(new Ingredient(id,name));
+            }
+
+            return ingredientsList;
+
+        } catch (SQLException e) {
+            System.out.println("Problem with loading Ingredients from database");
+            e.printStackTrace();
+            return null;
+        }
+
     }
 
     //Zavrie otvorene pripojenia

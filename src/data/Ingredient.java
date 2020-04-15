@@ -1,18 +1,17 @@
 package data;
 
-public class Ingredients {
+public class Ingredient {
 
 	private int id;
 	private String name;
 	
-	public Ingredients(int id, String name) {
-		super();
-		this.id = id;
-		this.name = name;
+	public Ingredient(int id, String name) {
+		setId(id);
+		setName(name);
 	}
 
-	public Ingredients(String name) {
-		this.name = name;
+	public Ingredient(String name) {
+		setName(name);
 	}
 
 	public int getId() {

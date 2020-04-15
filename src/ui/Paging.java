@@ -5,22 +5,30 @@ public class Paging {
     private int page = 1;
 	  private double totalPages;
 	  private double numberOfRecords;
-    private final double resultsPerPage = 23;
+    private double resultsPerPage = 23;
+
+    public Paging(){
+
+    }
+
+    public Paging(double resultsPerPage){
+      setResultsPerPage(resultsPerPage);
+    }
     
     public int getPage() {
 		return page;
     }
 
     public void setPage(int updated){
-        page = updated;
+        this.page = updated;
     }
     
     public void incrementPage(){
-        page++;
+        this.page++;
     }
 
     public void decrementPage(){
-        page--;
+        this.page--;
     }
 
 	public double getTotalPages() {
@@ -28,19 +36,23 @@ public class Paging {
     }
     
     public void setTotalPages(double updated) {
-		totalPages = updated;
+		this.totalPages = updated;
 	}
 
 	public double getNumberOfRecords() {
 		return numberOfRecords;
     }
     
-    public void setNumberOfRecords(double updated) {
-		numberOfRecords = updated;
+  public void setNumberOfRecords(double updated) {
+    this.numberOfRecords = updated;
 	}
 
 	public double getResultsPerPage() {
 		return resultsPerPage;
-    }
+  }
+
+  public void setResultsPerPage(double updated) {
+    this.resultsPerPage = updated;
+  }
 
 }

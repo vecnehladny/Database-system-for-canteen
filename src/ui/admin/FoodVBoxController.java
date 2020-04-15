@@ -8,7 +8,7 @@ import application.SQLConnector;
 import ui.Paging;
 
 import data.FoodItem;
-import data.Ingredients;
+import data.Ingredient;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -57,14 +57,14 @@ public class FoodVBoxController {
 			if (paging.getPage() < paging.getTotalPages()) {
 				paging.incrementPage();
 				System.out.println("idem na stranu: " + paging.getPage());
-				update();
+				updateFoodList();
 			}
 		});
 		foodPreviousBtn.setOnAction(e -> {
 			if (paging.getPage() > 1) {
 				paging.decrementPage();
 				System.out.println("idem na stranu: " + paging.getPage());
-				update();
+				updateFoodList();
 			}
 		});
 
@@ -116,11 +116,11 @@ public class FoodVBoxController {
 			return tRow;
 		});
 
-		update();
+		updateFoodList();
 
 	}
 
-	public void update() {
+	public void updateFoodList() {
 		foodTableView.getItems().clear();
 		SQLConnector connector = new SQLConnector();
 		connector.connectToDB();
@@ -224,7 +224,7 @@ public class FoodVBoxController {
 					+ "\nChef: " + food.getChef() + "\nIngredients:\n";
 
 			if (food.getIngredients() != null) {
-				for (Ingredients ing : food.getIngredients()) {
+				for (Ingredient ing : food.getIngredients()) {
 					textString += ing.getName() + "\n";
 				}
 			}
@@ -258,7 +258,7 @@ class FoodEditController
 		containBox.getItems().clear();
 		//Vlozenie obsahujucich ingredienci
 		if(food.getIngredients() != null) {
-			for (Ingredients ing : food.getIngredients()) {
+			for (Ingredient ing : food.getIngredients()) {
 				String nameString = ing.getName();
 				CheckBox cb0 = new CheckBox(nameString);  
 				cb0.setUserData(ing);
@@ -270,14 +270,14 @@ class FoodEditController
 		}
 	
 		//Debug
-		List<Ingredients> dIngredients = new ArrayList<>();
-		dIngredients.add(new Ingredients(0, "oregano"));
-		dIngredients.add(new Ingredients(0, "paprika"));
-		dIngredients.add(new Ingredients(0, "kecup"));
-		dIngredients.add(new Ingredients(0, "bazalka"));
-		dIngredients.add(new Ingredients(0, "horcica"));
+		List<Ingredient> dIngredients = new ArrayList<>();
+		dIngredients.add(new Ingredient(0, "oregano"));
+		dIngredients.add(new Ingredient(0, "paprika"));
+		dIngredients.add(new Ingredient(0, "kecup"));
+		dIngredients.add(new Ingredient(0, "bazalka"));
+		dIngredients.add(new Ingredient(0, "horcica"));
 		
-		for (Ingredients ing : dIngredients) {
+		for (Ingredient ing : dIngredients) {
 			CheckBox cb0 = new CheckBox(ing.getName());  
 			cb0.setUserData(ing);
 			CustomMenuItem item0 = new CustomMenuItem(cb0); 
@@ -308,11 +308,11 @@ class FoodEditController
 			}
 			food.setChef(chefField.getText());
 			
-			ArrayList<Ingredients> newList = new ArrayList<Ingredients>();			
+			ArrayList<Ingredient> newList = new ArrayList<Ingredient>();			
 			for (MenuItem custom : containBox.getItems()) {
 				CheckBox item = (CheckBox)((CustomMenuItem)custom).getContent();
 				if(item.isSelected()) {
-					newList.add((Ingredients)item.getUserData());
+					newList.add((Ingredient)item.getUserData());
 				}
 			}		
 			food.setIngredients(newList);

@@ -3,7 +3,7 @@ package ui.admin;
 import java.io.IOException;
 import java.util.Optional;
 
-import data.Ingredients;
+import data.Ingredient;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -27,7 +27,7 @@ import javafx.stage.Stage;
 public class IngredientsVBoxController {
 
 	@FXML Button ingredientsSearchBtn,ingredientNextBtn,ingredientPreviousBtn;	
-	@FXML TableView<Ingredients> ingredientTableView;
+	@FXML TableView<Ingredient> ingredientTableView;
 	@FXML TextField ingredientsSearchField;
 	
 	public void initialize()
@@ -57,12 +57,12 @@ public class IngredientsVBoxController {
 		ingredientTableView.getColumns().get(0).setCellValueFactory(new PropertyValueFactory<>("name"));
 		
 		ingredientTableView.setRowFactory(e -> {
-			TableRow<Ingredients> tRow = new TableRow<>();
+			TableRow<Ingredient> tRow = new TableRow<>();
 		    tRow.setOnMouseClicked(event -> {
 		    	
 		    	if(tRow.isEmpty())
 		    		return;	    	
-	            Ingredients ing = tRow.getItem();
+	            Ingredient ing = tRow.getItem();
 	            
 	            //Vybratie moznosti delete
 				deleteMenu.setOnAction(new EventHandler<ActionEvent>() {
@@ -98,11 +98,11 @@ public class IngredientsVBoxController {
 		//Debug
 		for(int i=1;i<1000;i++)
 		{
-			ingredientTableView.getItems().add(new Ingredients(i,"oregano"));
+			ingredientTableView.getItems().add(new Ingredient(i,"oregano"));
 		}
 	}
 	
-	private void openEditMenu(Ingredients ingredient)
+	private void openEditMenu(Ingredient ingredient)
 	{
 		try {
 			//Pouzivam to iste XML ako pre chefs pretoze v oboch je len meno
@@ -129,7 +129,7 @@ public class IngredientsVBoxController {
 	}
 	
 	//Vytvara upozornenie pri mazani
-	private void showConfirmBox(Ingredients ing)
+	private void showConfirmBox(Ingredient ing)
 	{
 		Platform.runLater(() -> {
             ButtonType okay = new ButtonType("Delete");
@@ -157,7 +157,7 @@ class IngEditController
 	@FXML TextField nameField;
 	@FXML Button saveBtn;
 	
-	public void setIng(Ingredients ing, Stage stage, TableView<Ingredients> table)
+	public void setIng(Ingredient ing, Stage stage, TableView<Ingredient> table)
 	{
 		nameField.setText(ing.getName());
 		

@@ -7,7 +7,7 @@ import java.util.Optional;
 
 import application.SQLConnector;
 import data.FoodItem;
-import data.Ingredients;
+import data.Ingredient;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -245,14 +245,14 @@ public class UserMenuController {
 				if (paging.getPage() < paging.getTotalPages()) {
 					paging.incrementPage();
 					System.out.println("idem na stranu: " + paging.getPage());
-					update();
+					updateFoodList();
 				}
 			});
 			foodPreviousBtn.setOnAction(e->{
 				if (paging.getPage() > 1) {
 					paging.decrementPage();
 					System.out.println("idem na stranu: " + paging.getPage());
-					update();
+					updateFoodList();
 				}
 			});
 			
@@ -273,7 +273,7 @@ public class UserMenuController {
 			    return tRow ;
 			});
 			
-			update();
+			updateFoodList();
 
 
 		} catch (IOException e) {
@@ -281,7 +281,7 @@ public class UserMenuController {
 		}
 	}
 
-	public void update() {
+	public void updateFoodList() {
 		foodTableView.getItems().clear();
 		SQLConnector connector = new SQLConnector();
 		connector.connectToDB();
@@ -367,7 +367,7 @@ public class UserMenuController {
 			
 			if(food.getIngredients()!= null)
 			{
-				for (Ingredients ing: food.getIngredients()) {
+				for (Ingredient ing: food.getIngredients()) {
 					textString+=ing.getName()+"\n";
 				}
 			}

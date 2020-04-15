@@ -3,7 +3,8 @@ package ui;
 import java.util.ArrayList;
 import java.util.List;
 
-import data.Ingredients;
+import application.SQLConnector;
+import data.Ingredient;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
@@ -20,6 +21,8 @@ import ui.user.UserMenuController;
 
 //Zatial sa pouziva iba na filtrovanie jedla
 public class FoodFilterController {
+
+	public Paging paging = new Paging();
 
 	@FXML MenuButton containBox;
 	@FXML MenuButton notContainBox;
@@ -50,38 +53,39 @@ public class FoodFilterController {
 		
 		priceSlider.setValue(maxPrice);
 		
-		//Vycistenie boxov
+		//TODO Dorobit nacitavanie ingrendiencii z DB
+		updateIngredientsList();
+
+	}
+
+	public void updateIngredientsList() {
 		containBox.getItems().clear();
 		notContainBox.getItems().clear();
-		containBox.setText("");
-		notContainBox.setText("");
-		
-		//TODO Dorobit nacitavanie ingrendiencii z DB
-		List<Ingredients> ingredients = new ArrayList<>();
-		ingredients.add(new Ingredients(0, "oregano"));
-		ingredients.add(new Ingredients(0, "paprika"));
-		ingredients.add(new Ingredients(0, "kecup"));
-		ingredients.add(new Ingredients(0, "bazalka"));
-		ingredients.add(new Ingredients(0, "horcica"));
-		
-		
-		for (Ingredients ing: ingredients) {
-			CheckBox cb0 = new CheckBox(ing.getName());  
-			cb0.setUserData(ing);
-			CustomMenuItem item0 = new CustomMenuItem(cb0); 
-			item0.setHideOnClick(false);  
-			containBox.getItems().add(item0);
+		SQLConnector connector = new SQLConnector();
+		connector.connectToDB();
+		if (connector.isConnectedToDB()) {
+			ArrayList<Ingredient> ingredientsList = connector.getIngredientsListFromDB();
+
+			for (Ingredient ing : ingredientsList) {
+				CheckBox cb0 = new CheckBox(ing.getName());  
+				cb0.setUserData(ing);
+				CustomMenuItem item0 = new CustomMenuItem(cb0); 
+				item0.setHideOnClick(false);  
+				containBox.getItems().add(item0);
+			}
+
+			for (Ingredient ing : ingredientsList) {
+				CheckBox cb0 = new CheckBox(ing.getName());  
+				cb0.setUserData(ing);
+				CustomMenuItem item0 = new CustomMenuItem(cb0); 
+				item0.setHideOnClick(false);
+				notContainBox.getItems().add(item0);
+			}
+
+			containBox.setText(((CheckBox)((CustomMenuItem) containBox.getItems().get(0)).getContent()).getText());
+			notContainBox.setText(((CheckBox)((CustomMenuItem) containBox.getItems().get(0)).getContent()).getText());
 		}
-		
-		for (Ingredients ing : ingredients) {
-			CheckBox cb0 = new CheckBox(ing.getName());  
-			cb0.setUserData(ing);
-			CustomMenuItem item0 = new CustomMenuItem(cb0); 
-			item0.setHideOnClick(false);  
-			notContainBox.getItems().add(item0);
-		}
-		
-		
+		connector.closeConnection();
 	}
 	
 	public void setUserFoodFilter(UserMenuController userMenuController) {
