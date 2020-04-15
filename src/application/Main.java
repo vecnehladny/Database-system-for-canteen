@@ -15,6 +15,7 @@ public class Main extends Application {
 	
 	@Override
 	public void start(Stage primaryStage) {
+		Application.setUserAgentStylesheet(getClass().getResource("stylesheet.css").toExternalForm());
 			
 		//Nechceme aby sa DB vytvarala pomocou kodu
 		/*showLoadingPage(primaryStage);
@@ -23,15 +24,13 @@ public class Main extends Application {
 		connector.closeConnection();*/
 		//primaryStage.close();
 		
-		try {
-				
+		try {				
 			AnchorPane root = (AnchorPane)FXMLLoader.load(getClass().getResource("/ui/LoginScreen.fxml"));
 			Scene scene = new Scene(root);
 			primaryStage.setScene(scene);
 			primaryStage.setResizable(false);
 			primaryStage.setTitle(LOGIN_STRING);
 			primaryStage.show();
-			
 		} catch(Exception e) {
 			e.printStackTrace();
 		}
