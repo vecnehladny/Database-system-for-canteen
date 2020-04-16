@@ -135,7 +135,17 @@ public class FoodVBoxController {
 	}
 
 	public void changeFoodFilter() {
-		// TODO Tu by mal byt kod na zmenu filtrovania jedla
+		foodTableView.getItems().clear();
+		SQLConnector connector = new SQLConnector();
+		connector.connectToDB();
+		if (connector.isConnectedToDB()) {
+			ArrayList<FoodItem> foodList = connector.getFoodListFilteredFromDB(paging);
+
+			for (FoodItem f : foodList) {
+				foodTableView.getItems().add(f);
+			}
+		}
+		connector.closeConnection();
 	}
 
 	// Otvori okno s filtrom

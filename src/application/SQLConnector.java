@@ -161,7 +161,7 @@ public class SQLConnector {
         if(connection == null) {    return null;}
 
         int startFrom = (f.getPage() - 1) * (int)(f.getResultsPerPage());
-        ArrayList<FoodItem> foodList = new ArrayList<FoodItem>();
+        ArrayList<FoodItem> list = new ArrayList<FoodItem>();
 
         try {
             //zistim kolko je zaznamov v tabulke 
@@ -182,26 +182,81 @@ public class SQLConnector {
                 int price = resultSet.getInt(3);
                 String chef = resultSet.getString(4);
                 String ingredientsString = resultSet.getString(5);
-                ArrayList<Ingredient> ingredient = new ArrayList<Ingredient>();
+                ArrayList<Ingredient> ingredients = new ArrayList<Ingredient>();
                 
                 if(ingredientsString == null){
-                    ingredient.clear();
+                    ingredients.clear();
                 }
                 else {
                     if(ingredientsString.contains(",")){
                         String[] splitted = ingredientsString.split(",");
                         for(String s : splitted){
-                            ingredient.add(new Ingredient(s));
+                            ingredients.add(new Ingredient(s));
                         }
                     }
                     else {
-                        ingredient.add(new Ingredient(ingredientsString));
+                        ingredients.add(new Ingredient(ingredientsString));
                     }   
                 }
-                foodList.add(new FoodItem(id,name,price,chef,ingredient));
+                list.add(new FoodItem(id,name,price,chef,ingredients));
             }
 
-            return foodList;
+            return list;
+
+        } catch (SQLException e) {
+            System.out.println("Problem with loading food from database");
+            e.printStackTrace();
+            return null;
+        }
+
+    }
+
+    public ArrayList<FoodItem> getFoodListFilteredFromDB(Paging f){
+        
+        if(connection == null) {    return null;}
+
+        int startFrom = (f.getPage() - 1) * (int)(f.getResultsPerPage());
+        ArrayList<FoodItem> list = new ArrayList<FoodItem>();
+
+        try {
+            //zistim kolko je zaznamov v tabulke 
+            f.setNumberOfRecords(getRecordNumberFromDB("food"));
+
+            //Pocet stran na ktore rozdelim zaznamy
+            f.setTotalPages(Math.ceil(f.getNumberOfRecords() / f.getResultsPerPage()));
+
+            //vyberiem z tabulky potrebny pocet zaznamov na stranu
+            preparedStatement = connection.prepareStatement("SELECT f.ID, f.NAME, f.PRICE, ch.NAME, GROUP_CONCAT(i.name) FROM food f JOIN food_chef fc ON fc.FOOD_ID = f.ID JOIN chefs ch ON ch.ID = fc.CHEF_ID LEFT JOIN food_ingredients fi ON fi.FOOD_ID = f.ID LEFT JOIN ingredients i ON fi.INGREDIENTS_ID = i.ID GROUP BY fc.ID ORDER BY fc.ID ASC LIMIT ?, ?");
+            preparedStatement.setInt(1, startFrom);
+            preparedStatement.setInt(2, (int)(f.getResultsPerPage()));
+            resultSet = preparedStatement.executeQuery();
+
+            while(resultSet.next()){
+                int id = resultSet.getInt(1);
+                String name = resultSet.getString(2);
+                int price = resultSet.getInt(3);
+                String chef = resultSet.getString(4);
+                String ingredientsString = resultSet.getString(5);
+                ArrayList<Ingredient> ingredients = new ArrayList<Ingredient>();
+                
+                if(ingredientsString == null){
+                    ingredients.clear();
+                }
+                else {
+                    if(ingredientsString.contains(",")){
+                        String[] splitted = ingredientsString.split(",");
+                        for(String s : splitted){
+                            ingredients.add(new Ingredient(s));
+                        }
+                    }
+                    else {
+                        ingredients.add(new Ingredient(ingredientsString));
+                    }   
+                }
+                list.add(new FoodItem(id,name,price,chef,ingredients));
+            }
+
+            return list;
 
         } catch (SQLException e) {
             System.out.println("Problem with loading food from database");
@@ -216,7 +271,7 @@ public class SQLConnector {
         if(connection == null) {    return null;}
 
         int startFrom = (f.getPage() - 1) * (int)(f.getResultsPerPage());
-        ArrayList<Chef> chefList = new ArrayList<Chef>();
+        ArrayList<Chef> list = new ArrayList<Chef>();
 
         try {
             //zistim kolko je zaznamov v tabulke
@@ -235,10 +290,10 @@ public class SQLConnector {
                 int id = resultSet.getInt("ID");
                 String name = resultSet.getString("NAME");
                 
-                chefList.add(new Chef(id,name));
+                list.add(new Chef(id,name));
             }
 
-            return chefList;
+            return list;
 
         } catch (SQLException e) {
             System.out.println("Problem with loading chefs from database");
@@ -271,7 +326,7 @@ public class SQLConnector {
         
         if(connection == null) {    return null;}
 
-        ArrayList<Ingredient> ingredientsList = new ArrayList<Ingredient>();
+        ArrayList<Ingredient> list = new ArrayList<Ingredient>();
 
         try {
 
@@ -283,10 +338,87 @@ public class SQLConnector {
                 int id = resultSet.getInt(1);
                 String name = resultSet.getString(2);
                 
-                ingredientsList.add(new Ingredient(id,name));
+                list.add(new Ingredient(id,name));
             }
 
-            return ingredientsList;
+            return list;
+
+        } catch (SQLException e) {
+            System.out.println("Problem with loading Ingredients from database");
+            e.printStackTrace();
+            return null;
+        }
+
+    }
+
+    public ArrayList<Ingredient> getIngredientListFromDB(Paging f){
+        
+        if(connection == null) {    return null;}
+
+        int startFrom = (f.getPage() - 1) * (int)(f.getResultsPerPage());
+        ArrayList<Ingredient> list = new ArrayList<Ingredient>();
+
+        try {
+            //zistim kolko je zaznamov v tabulke 
+            f.setNumberOfRecords(getRecordNumberFromDB("ingredients"));
+
+            //Pocet stran na ktore rozdelim zaznamy
+            f.setTotalPages(Math.ceil(f.getNumberOfRecords() / f.getResultsPerPage()));
+
+            //vyberiem z tabulky potrebny pocet zaznamov na stranu
+            preparedStatement = connection.prepareStatement("SELECT * from ingredients ORDER BY ID ASC LIMIT ?, ?");
+            preparedStatement.setInt(1, startFrom);
+            preparedStatement.setInt(2, (int)(f.getResultsPerPage()));
+            resultSet = preparedStatement.executeQuery();
+
+            while(resultSet.next()){
+                int id = resultSet.getInt(1);
+                String name = resultSet.getString(2);
+                
+                list.add(new Ingredient(id,name));
+            }
+
+            return list;
+
+        } catch (SQLException e) {
+            System.out.println("Problem with loading Ingredients from database");
+            e.printStackTrace();
+            return null;
+        }
+
+    }
+
+    public ArrayList<User> getUserListFromDB(Paging f){
+        
+        if(connection == null) {    return null;}
+
+        int startFrom = (f.getPage() - 1) * (int)(f.getResultsPerPage());
+        ArrayList<User> list = new ArrayList<User>();
+
+        try {
+            //zistim kolko je zaznamov v tabulke 
+            f.setNumberOfRecords(getRecordNumberFromDB("users"));
+
+            //Pocet stran na ktore rozdelim zaznamy
+            f.setTotalPages(Math.ceil(f.getNumberOfRecords() / f.getResultsPerPage()));
+
+            //vyberiem z tabulky potrebny pocet zaznamov na stranu
+            preparedStatement = connection.prepareStatement("SELECT * from users ORDER BY ID ASC LIMIT ?, ?");
+            preparedStatement.setInt(1, startFrom);
+            preparedStatement.setInt(2, (int)(f.getResultsPerPage()));
+            resultSet = preparedStatement.executeQuery();
+
+            while(resultSet.next()){
+                int id = resultSet.getInt(1);
+                String name = resultSet.getString(2);
+                String address = resultSet.getString(3);
+                String email = resultSet.getString(5);
+                boolean privileged = resultSet.getBoolean(6);
+                
+                list.add(new User(id,name,address,email,privileged));
+            }
+
+            return list;
 
         } catch (SQLException e) {
             System.out.println("Problem with loading Ingredients from database");

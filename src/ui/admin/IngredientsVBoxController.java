@@ -1,8 +1,10 @@
 package ui.admin;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Optional;
 
+import application.SQLConnector;
 import data.Ingredient;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
@@ -23,8 +25,11 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import ui.Paging;
 
 public class IngredientsVBoxController {
+
+	public Paging paging = new Paging();
 
 	@FXML Button ingredientsSearchBtn,ingredientNextBtn,ingredientPreviousBtn;	
 	@FXML TableView<Ingredient> ingredientTableView;
@@ -41,10 +46,16 @@ public class IngredientsVBoxController {
 		
 		//Pridat funckie next a previous - aby sme nezobrazili 1milion zaznamom naraz
 		ingredientNextBtn.setOnAction(e->{
-			System.out.println("Next btn pressed");
+			if (paging.getPage() < paging.getTotalPages()) {
+				paging.incrementPage();
+				updateIngredientsList();
+			}
 		});
 		ingredientPreviousBtn.setOnAction(e->{
-			System.out.println("Previous btn pressed");
+			if (paging.getPage() > 1) {
+				paging.decrementPage();
+				updateIngredientsList();
+			}
 		});
 		
 		//Vytvorenie moznosti pri kliku praveho tlacidla
@@ -95,11 +106,21 @@ public class IngredientsVBoxController {
 		
 		//TODO pridat nacitanie ingrediencii z DB
 		
-		//Debug
-		for(int i=1;i<1000;i++)
-		{
-			ingredientTableView.getItems().add(new Ingredient(i,"oregano"));
+		updateIngredientsList();
+	}
+
+	public void updateIngredientsList() {
+		ingredientTableView.getItems().clear();
+		SQLConnector connector = new SQLConnector();
+		connector.connectToDB();
+		if (connector.isConnectedToDB()) {
+			ArrayList<Ingredient> foodList = connector.getIngredientListFromDB(paging);
+
+			for (Ingredient f : foodList) {
+				ingredientTableView.getItems().add(f);
+			}
 		}
+		connector.closeConnection();
 	}
 	
 	private void openEditMenu(Ingredient ingredient)

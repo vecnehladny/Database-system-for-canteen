@@ -238,7 +238,7 @@ public class UserMenuController {
 								
 			foodFilterBtn.setOnAction(e->{
 				openFilterMenu();
-			});	
+			}); 
 			
 			//Pridat funckie next a previous - aby sme nezobrazili 1milion zaznamom naraz
 			foodNextBtn.setOnAction(e->{

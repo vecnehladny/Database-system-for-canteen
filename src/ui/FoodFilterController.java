@@ -22,8 +22,6 @@ import ui.user.UserMenuController;
 //Zatial sa pouziva iba na filtrovanie jedla
 public class FoodFilterController {
 
-	public Paging paging = new Paging();
-
 	@FXML MenuButton containBox;
 	@FXML MenuButton notContainBox;
 	@FXML Slider priceSlider;

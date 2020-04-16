@@ -1,8 +1,11 @@
 package ui.admin;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Optional;
+import ui.Paging;
 
+import application.SQLConnector;
 import data.User;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
@@ -26,6 +29,8 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 public class UserVBoxController {
+
+	Paging paging = new Paging();
 
 	@FXML Button userSearchBtn,userNextBtn,userPreviousBtn;	
 	@FXML TableView<User> userTableView;
@@ -99,11 +104,22 @@ public class UserVBoxController {
 		//TODO pridat nacitanie userov
 		
 		//Debug
-		for(int i=1;i<1000;i++)
-		{
-			userTableView.getItems().add(new User(i, "Jozko Mrkvicka"+i, "Mlynska dolina "+i, "example123@gmail.com",false));
-		}
+		updateUserList();
 
+	}
+
+	public void updateUserList() {
+		userTableView.getItems().clear();
+		SQLConnector connector = new SQLConnector();
+		connector.connectToDB();
+		if (connector.isConnectedToDB()) {
+			ArrayList<User> userList = connector.getUserListFromDB(paging);
+
+			for (User f : userList) {
+				userTableView.getItems().add(f);
+			}
+		}
+		connector.closeConnection();
 	}
 	
 	private void openEditMenu(User user)
