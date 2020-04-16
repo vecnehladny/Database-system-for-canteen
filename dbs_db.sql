@@ -11,7 +11,7 @@
  Target Server Version : 80019
  File Encoding         : 65001
 
- Date: 05/04/2020 23:38:36
+ Date: 16/04/2020 14:10:14
 */
 
 SET NAMES utf8mb4;
@@ -163,7 +163,7 @@ CREATE TABLE `food_ingredients` (
   KEY `fi_ingredients` (`INGREDIENTS_ID`),
   CONSTRAINT `fi_food` FOREIGN KEY (`FOOD_ID`) REFERENCES `food` (`ID`),
   CONSTRAINT `fi_ingredients` FOREIGN KEY (`INGREDIENTS_ID`) REFERENCES `ingredients` (`ID`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=22 DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Records of food_ingredients
@@ -175,6 +175,20 @@ INSERT INTO `food_ingredients` VALUES (3, 11, 3);
 INSERT INTO `food_ingredients` VALUES (4, 12, 3);
 INSERT INTO `food_ingredients` VALUES (5, 15, 3);
 INSERT INTO `food_ingredients` VALUES (6, 19, 3);
+INSERT INTO `food_ingredients` VALUES (7, 2, 2);
+INSERT INTO `food_ingredients` VALUES (8, 2, 5);
+INSERT INTO `food_ingredients` VALUES (9, 10, 5);
+INSERT INTO `food_ingredients` VALUES (10, 1, 5);
+INSERT INTO `food_ingredients` VALUES (12, 1, 4);
+INSERT INTO `food_ingredients` VALUES (13, 2, 3);
+INSERT INTO `food_ingredients` VALUES (14, 2, 1);
+INSERT INTO `food_ingredients` VALUES (15, 3, 1);
+INSERT INTO `food_ingredients` VALUES (16, 3, 6);
+INSERT INTO `food_ingredients` VALUES (17, 3, 7);
+INSERT INTO `food_ingredients` VALUES (18, 15, 5);
+INSERT INTO `food_ingredients` VALUES (19, 15, 2);
+INSERT INTO `food_ingredients` VALUES (20, 15, 6);
+INSERT INTO `food_ingredients` VALUES (21, 15, 7);
 COMMIT;
 
 -- ----------------------------
@@ -208,7 +222,7 @@ CREATE TABLE `ingredients` (
   `NAME` varchar(45) NOT NULL,
   PRIMARY KEY (`ID`),
   UNIQUE KEY `NAME_UNIQUE` (`NAME`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Records of ingredients
@@ -216,8 +230,10 @@ CREATE TABLE `ingredients` (
 BEGIN;
 INSERT INTO `ingredients` VALUES (2, 'Bryndza');
 INSERT INTO `ingredients` VALUES (3, 'Cesto');
+INSERT INTO `ingredients` VALUES (6, 'Kapusta');
 INSERT INTO `ingredients` VALUES (5, 'Maslo');
 INSERT INTO `ingredients` VALUES (4, 'Paradajky');
+INSERT INTO `ingredients` VALUES (7, 'Pomaranč');
 INSERT INTO `ingredients` VALUES (1, 'Zemiaky');
 COMMIT;
 
@@ -253,13 +269,14 @@ CREATE TABLE `users` (
   `PRIVILEDGED` tinyint(1) NOT NULL,
   PRIMARY KEY (`ID`),
   UNIQUE KEY `EMAIL_UNIQUE` (`EMAIL`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Records of users
 -- ----------------------------
 BEGIN;
 INSERT INTO `users` VALUES (1, 'root', '-', '63a9f0ea7bb98050796b649e85481845', 'root', 1);
+INSERT INTO `users` VALUES (3, 'viktor', 'out', '530ea1472e71035353d32d341ecf6343', 'viktor@klima.com', 0);
 COMMIT;
 
 SET FOREIGN_KEY_CHECKS = 1;
