@@ -30,6 +30,7 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import ui.Filter;
 import ui.FoodFilterController;
 import ui.Paging;
 
@@ -295,8 +296,18 @@ public class UserMenuController {
 		connector.closeConnection();
 	}
 	
-	public void changeFoodFilter(){
-		//TODO Tu by mal byt kod na zmenu filtrovania v menu
+	public void changeFoodFilter(Filter f) {
+		foodTableView.getItems().clear();
+		SQLConnector connector = new SQLConnector();
+		connector.connectToDB();
+		if (connector.isConnectedToDB()) {
+			ArrayList<FoodItem> foodList = connector.getFoodListFromDB(paging,f);
+
+			for (FoodItem fi : foodList) {
+				foodTableView.getItems().add(fi);
+			}
+		}
+		connector.closeConnection();
 	}
 	
 	//Vytvara upozornenie pri mazani

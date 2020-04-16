@@ -4,6 +4,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.sql.*;
 import java.util.ArrayList;
 
+import ui.Filter;
 import ui.Paging;
 
 import data.User;
@@ -211,24 +212,52 @@ public class SQLConnector {
 
     }
 
-    public ArrayList<FoodItem> getFoodListFilteredFromDB(Paging f){
-        
-        if(connection == null) {    return null;}
+    public ArrayList<FoodItem> getFoodListFromDB(Paging p, Filter f) {
+		if(connection == null) {    return null;}
 
-        int startFrom = (f.getPage() - 1) * (int)(f.getResultsPerPage());
+        int startFrom = (p.getPage() - 1) * (int)(p.getResultsPerPage());
         ArrayList<FoodItem> list = new ArrayList<FoodItem>();
+
+        StringBuilder cmd = new StringBuilder("SELECT f.ID, f.NAME, f.PRICE, ch.NAME, GROUP_CONCAT(i.name) as igroup FROM food f JOIN food_chef fc ON fc.FOOD_ID = f.ID JOIN chefs ch ON ch.ID = fc.CHEF_ID LEFT JOIN food_ingredients fi ON fi.FOOD_ID = f.ID LEFT JOIN ingredients i ON fi.INGREDIENTS_ID = i.ID ");
+        cmd.append("GROUP BY fc.ID ");
+        cmd.append("HAVING f.PRICE <= " + f.getMaxPrice() + " ");
+
+        if(!f.getShouldContain().isEmpty()){
+            for(String s : f.getShouldContain()){
+                cmd.append("AND igroup LIKE '%" + s + "%' ");
+            }
+        }
+
+        if(!f.getShouldNotContain().isEmpty()){
+            for(String s : f.getShouldNotContain()){
+                cmd.append("AND igroup NOT LIKE '%" + s + "%' ");
+            }
+        }
+
+        if(!f.getChefName().isEmpty()){
+            cmd.append("AND ch.NAME LIKE '%" + f.getChefName() + "%' ");
+        }
+
+        if(!f.getFoodName().isEmpty()){
+            cmd.append("AND f.NAME LIKE '%" + f.getFoodName() + "%' ");
+        }
+        
+
+        cmd.append("ORDER BY fc.ID ASC LIMIT ");
+        
+        System.out.println(cmd);
 
         try {
             //zistim kolko je zaznamov v tabulke 
-            f.setNumberOfRecords(getRecordNumberFromDB("food"));
+            p.setNumberOfRecords(getRecordNumberFromDB("food"));
 
             //Pocet stran na ktore rozdelim zaznamy
-            f.setTotalPages(Math.ceil(f.getNumberOfRecords() / f.getResultsPerPage()));
+            p.setTotalPages(Math.ceil(p.getNumberOfRecords() / p.getResultsPerPage()));
 
             //vyberiem z tabulky potrebny pocet zaznamov na stranu
-            preparedStatement = connection.prepareStatement("SELECT f.ID, f.NAME, f.PRICE, ch.NAME, GROUP_CONCAT(i.name) FROM food f JOIN food_chef fc ON fc.FOOD_ID = f.ID JOIN chefs ch ON ch.ID = fc.CHEF_ID LEFT JOIN food_ingredients fi ON fi.FOOD_ID = f.ID LEFT JOIN ingredients i ON fi.INGREDIENTS_ID = i.ID GROUP BY fc.ID ORDER BY fc.ID ASC LIMIT ?, ?");
+            preparedStatement = connection.prepareStatement(cmd.toString() + "?,?");
             preparedStatement.setInt(1, startFrom);
-            preparedStatement.setInt(2, (int)(f.getResultsPerPage()));
+            preparedStatement.setInt(2, (int)(p.getResultsPerPage()));
             resultSet = preparedStatement.executeQuery();
 
             while(resultSet.next()){
@@ -319,6 +348,46 @@ public class SQLConnector {
         } catch (SQLException e) {
             e.printStackTrace();
             return count;
+        }
+    }
+
+    public int getMaxPriceFromDB(){
+        
+        if(connection == null) {return 0;}
+        int maxPrice = 0;
+        try {
+            preparedStatement = connection.prepareStatement("SELECT MAX(food.PRICE) FROM food");
+            resultSet = preparedStatement.executeQuery();
+
+            while(resultSet.next()){
+                maxPrice = resultSet.getInt(1);
+            }
+
+            return maxPrice;
+            
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return maxPrice;
+        }
+    }
+
+    public int getMinPriceFromDB(){
+        
+        if(connection == null) {return 0;}
+        int minPrice = 0;
+        try {
+            preparedStatement = connection.prepareStatement("SELECT MIN(food.PRICE) FROM food");
+            resultSet = preparedStatement.executeQuery();
+
+            while(resultSet.next()){
+                minPrice = resultSet.getInt(1);
+            }
+
+            return minPrice;
+            
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return minPrice;
         }
     }
 
