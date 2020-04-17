@@ -157,6 +157,26 @@ public class SQLConnector {
         }
     }
 
+    public void updateUserDB(User u)
+    {
+        if(connection == null) {    return ;}
+        try {
+            preparedStatement = connection.prepareStatement("UPDATE users SET NAME=?, ADDRESS=?, PRIVILEDGED=? WHERE ID=?");
+            preparedStatement.setString(1, u.getName());
+            preparedStatement.setString(2, u.getAddress());
+            preparedStatement.setBoolean(3, u.isPriviledged());
+            preparedStatement.setInt(4, u.getId());
+            int updated = preparedStatement.executeUpdate();
+
+            System.out.println("Updating user id:"+u.getId());
+
+        } catch (SQLException e) {
+            System.out.println("Problem with checking user");
+            e.printStackTrace();
+        }
+
+    }
+
     public ArrayList<FoodItem> getFoodListFromDB(Paging f){
         
         if(connection == null) {    return null;}

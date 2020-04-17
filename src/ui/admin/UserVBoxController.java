@@ -101,9 +101,6 @@ public class UserVBoxController {
 		    return tRow ;
 		});	
 		
-		//TODO pridat nacitanie userov
-		
-		//Debug
 		updateUserList();
 
 	}
@@ -189,8 +186,17 @@ class UsersEditController
 			user.setPriviledged(priviledgedCheckbox.isSelected());
 			user.setAddress(addressField.getText());
 			table.refresh();
-			//TODO ulozit zmeny usera
+			updateUserInfo(user);
 			stage.close();
 		});
+	}
+
+	public void updateUserInfo(User u){
+		SQLConnector connector = new SQLConnector();
+		connector.connectToDB();
+		if (connector.isConnectedToDB()) {
+			connector.updateUserDB(u);
+		}
+		connector.closeConnection();
 	}
 }

@@ -31,7 +31,6 @@ public class FoodFilterController {
 	@FXML TextField chefName;
 	@FXML TextField foodName;
 	
-	//Max cena na slider - Zistit max cenu - alebo dame fixnu?
 	float maxPrice;	
 	float minPrice;	
 	UserMenuController userMenuController = null;
