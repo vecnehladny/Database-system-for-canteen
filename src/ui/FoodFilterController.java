@@ -14,7 +14,9 @@ import javafx.scene.control.CheckBox;
 import javafx.scene.control.CustomMenuItem;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuButton;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.Slider;
+import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 import ui.admin.FoodVBoxController;
 import ui.user.UserMenuController;
@@ -26,9 +28,11 @@ public class FoodFilterController {
 	@FXML MenuButton notContainBox;
 	@FXML Slider priceSlider;
 	@FXML Label priceLabel;
+	@FXML TextField chefName;
+	@FXML TextField foodName;
 	
-	//Max cena na slider - Zistit max cenu - alebo dame fixnu?
-	float maxPrice = 20;	
+	float maxPrice;	
+	float minPrice;	
 	UserMenuController userMenuController = null;
 	FoodVBoxController foodVBoxController = null;
 	
@@ -36,7 +40,10 @@ public class FoodFilterController {
 	{
 		System.out.println("Loaded filter screen!");
 		
+		updateMaxPrice();
+		updateMinPrice();
 		priceSlider.setMax(maxPrice);
+		priceSlider.setMin(minPrice);
 		
 		//Automaticka zmena textu pod sliderom
 		priceSlider.valueProperty().addListener(new ChangeListener<Number>() {
@@ -50,10 +57,29 @@ public class FoodFilterController {
 		});
 		
 		priceSlider.setValue(maxPrice);
+		containBox.setText("");
+		notContainBox.setText("");
 		
-		//TODO Dorobit nacitavanie ingrendiencii z DB
 		updateIngredientsList();
 
+	}
+
+	public void updateMaxPrice(){
+		SQLConnector connector = new SQLConnector();
+		connector.connectToDB();
+		if (connector.isConnectedToDB()) {
+			maxPrice = (float)connector.getMaxPriceFromDB();
+		}
+		connector.closeConnection();
+	}
+
+	public void updateMinPrice(){
+		SQLConnector connector = new SQLConnector();
+		connector.connectToDB();
+		if (connector.isConnectedToDB()) {
+			minPrice = (float)connector.getMinPriceFromDB();
+		}
+		connector.closeConnection();
 	}
 
 	public void updateIngredientsList() {
@@ -79,9 +105,6 @@ public class FoodFilterController {
 				item0.setHideOnClick(false);
 				notContainBox.getItems().add(item0);
 			}
-
-			containBox.setText(((CheckBox)((CustomMenuItem) containBox.getItems().get(0)).getContent()).getText());
-			notContainBox.setText(((CheckBox)((CustomMenuItem) containBox.getItems().get(0)).getContent()).getText());
 		}
 		connector.closeConnection();
 	}
@@ -95,16 +118,41 @@ public class FoodFilterController {
 		userMenuController=null;
 		this.foodVBoxController = foodVBoxController;
 	}
+
+	public Filter getFilter(){
+		Filter f = new Filter();
+
+		for(MenuItem m : containBox.getItems()){
+			CheckBox ch = ((CheckBox)((CustomMenuItem) m).getContent());
+			if(ch.isSelected()){
+				f.insertShouldContain(ch.getText());
+			}
+		}
+
+		for(MenuItem m : notContainBox.getItems()){
+			CheckBox ch = ((CheckBox)((CustomMenuItem) m).getContent());
+			if(ch.isSelected()){
+				f.insertShouldNotContain(ch.getText());
+			}
+		}
+
+		f.setChefName(chefName.getText());
+		f.setFoodName(foodName.getText());
+		f.setMaxPrice(priceSlider.getValue());
+
+		return f;
+	}
 	
 	//Tato metoda zavola metodu v food menu a tam sa nastavi filtrovanie food tabulky.
+	//TODO vyresetovat paging pri aplikovani filtra
 	public void saveChanges(ActionEvent event)
 	{
 		System.out.println("Filter used!!");
 		if(userMenuController!=null) {
-			userMenuController.changeFoodFilter();
+			userMenuController.changeFoodFilter(getFilter());
 		}
 		else {
-			foodVBoxController.changeFoodFilter();
+			foodVBoxController.changeFoodFilter(getFilter());
 		}
 		Stage pStage = (Stage) ((Node)event.getSource()).getScene().getWindow();
 		pStage.close();

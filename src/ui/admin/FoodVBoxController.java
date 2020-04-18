@@ -32,6 +32,7 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import ui.Filter;
 import ui.FoodFilterController;
 
 public class FoodVBoxController {
@@ -134,15 +135,30 @@ public class FoodVBoxController {
 		connector.closeConnection();
 	}
 
-	public void changeFoodFilter() {
+	public void changeFoodFilter(Filter f) {
 		foodTableView.getItems().clear();
 		SQLConnector connector = new SQLConnector();
 		connector.connectToDB();
 		if (connector.isConnectedToDB()) {
-			ArrayList<FoodItem> foodList = connector.getFoodListFilteredFromDB(paging);
+			ArrayList<FoodItem> foodList = connector.getFoodListFromDB(paging,f);
 
-			for (FoodItem f : foodList) {
-				foodTableView.getItems().add(f);
+			for (FoodItem fi : foodList) {
+				foodTableView.getItems().add(fi);
+			}
+		}
+		connector.closeConnection();
+	}
+
+	public void updateFoodList(Filter f) {
+
+		foodTableView.getItems().clear();
+		SQLConnector connector = new SQLConnector();
+		connector.connectToDB();
+		if (connector.isConnectedToDB()) {
+			ArrayList<FoodItem> foodList = connector.getFoodListFromDB(paging,f);
+
+			for (FoodItem fi : foodList) {
+				foodTableView.getItems().add(fi);
 			}
 		}
 		connector.closeConnection();
