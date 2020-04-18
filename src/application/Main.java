@@ -1,5 +1,6 @@
 package application;
 	
+import data.DataFaker;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.stage.Stage;
@@ -23,6 +24,8 @@ public class Main extends Application {
 		connector.connectToDB();
 		connector.closeConnection();*/
 		//primaryStage.close();
+		//DataFaker dataFaker = new DataFaker();
+		//dataFaker.initFaker();
 		
 		try {				
 			AnchorPane root = (AnchorPane)FXMLLoader.load(getClass().getResource("/ui/LoginScreen.fxml"));
