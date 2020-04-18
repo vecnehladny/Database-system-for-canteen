@@ -70,7 +70,7 @@ public class DataFaker {
 		for(int i=1;i<=OTHER_TABLE_COUNT;i++)
 		{
 			
-			sb.append(String.valueOf(i)+","+faker.name()+String.valueOf(i)+"\n");
+			sb.append(String.valueOf(i)+","+faker.name().fullName()+String.valueOf(i)+"\n");
 		}
 		
 		//Zapis do csv suboru
@@ -125,17 +125,10 @@ public class DataFaker {
 		final Random random = new Random();
 		
 		for(int i=1;i<=OTHER_TABLE_COUNT;i++)
-		{
-			/*int user_id = (int)(random.nextLong()%1200000);
-			if(user_id < 0)	
-				user_id*=-1;
-			else 
-				if(user_id == 0)
-					user_id++;*/
-			
+		{		
 			int user_id = random.nextInt(OTHER_TABLE_COUNT)+1;
-			Timestamp timestamp = new Timestamp(faker.date().birthday().getTime());
-			sb.append(String.valueOf(i)+","+timestamp+","+String.valueOf(user_id)+"\n");
+			Timestamp timestamp = new Timestamp(faker.date().birthday(1, 10).getTime());
+			sb.append(String.valueOf(i)+","+timestamp.toString()+","+String.valueOf(user_id)+"\n");
 		}
 		
 		//Zapis do csv suboru
@@ -189,31 +182,10 @@ public class DataFaker {
 		int id = 1;
 		
 		for(int i=1;i<=OTHER_TABLE_COUNT;i++)
-		{
-			/*int max_iter = random.nextInt()%3;
-			if(max_iter <0) 
-				max_iter*=-1;
-			else 
-				if(max_iter == 0) 
-					max_iter++;*/
-			
+		{			
 			int max_iter = random.nextInt(3)+1;
 			
 			for(int j=0;j<max_iter+1;j++){
-				/*int food_id = (int)(random.nextLong() % OTHER_TABLE_COUNT);
-				if(food_id < 0)	
-					food_id*=-1;
-				else 
-					if (food_id==0) 
-						food_id++;
-				
-				int count = (random.nextInt() % 3);
-				if(count < 0) 
-					count*=-1;
-				else 
-					if (count ==0)	
-						count++;
-				*/
 				int food_id = random.nextInt(OTHER_TABLE_COUNT)+1;
 				int count = random.nextInt(3)+1;
 				

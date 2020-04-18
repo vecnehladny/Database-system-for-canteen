@@ -7,11 +7,11 @@ public class FoodItem {
 
 	private int id;
 	private String name;
-	private int price;
+	private float price;
 	private String chef;
 	private ArrayList<Ingredient> ingredients = new ArrayList<Ingredient>();
 	
-	public FoodItem(int id, String name, int price, String chef, ArrayList<Ingredient> ingredients) {
+	public FoodItem(int id, String name, float price, String chef, ArrayList<Ingredient> ingredients) {
 		super();
 		this.id = id;
 		this.name = name;
@@ -40,7 +40,7 @@ public class FoodItem {
 		return String.valueOf(price);
 	}
 
-	public void setPrice(int price) {
+	public void setPrice(float price) {
 		this.price = price;
 	}
 	public String getChef() {

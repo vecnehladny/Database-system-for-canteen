@@ -8,11 +8,11 @@ public class Order {
 	private int id;
 	private String createdTime;
 	private boolean paid;
-	private int price;
+	private float price;
 	private String customer;
 	private List<FoodItem> food = new ArrayList<>();
 	
-	public Order(int id, String createdTime, boolean paid, int price, String customer, List<FoodItem> food) {
+	public Order(int id, String createdTime, boolean paid, float price, String customer, List<FoodItem> food) {
 		this.id = id;
 		this.createdTime = createdTime;
 		this.paid = paid;
@@ -49,7 +49,7 @@ public class Order {
 		return String.valueOf(price);
 	}
 
-	public void setPrice(int price) {
+	public void setPrice(float price) {
 		this.price = price;
 	}
 

@@ -24,6 +24,7 @@ public class Main extends Application {
 		connector.connectToDB();
 		connector.closeConnection();*/
 		//primaryStage.close();
+		
 		//DataFaker dataFaker = new DataFaker();
 		//dataFaker.initFaker();
 		

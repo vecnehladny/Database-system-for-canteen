@@ -22,7 +22,7 @@ public class SQLConnector {
     private ResultSet resultSet = null;
    
     private String username = "root";
-    private String password = "infernoinferno";
+    private String password = "root";
     
     
     //Nacitanie drivera a pripojenie k databaze
@@ -139,24 +139,6 @@ public class SQLConnector {
         return null;
     }
 
-    //Zmaze cely obsah tabulky - iba na test
-    public void deleteUserDB()
-    {
-        try {
-            statement = connection.createStatement();
-
-            statement.execute("DELETE from users");
-            //Reset autoincrement
-            statement.execute("ALTER TABLE dbs_db.users AUTO_INCREMENT = 1;");
-
-            System.out.println("USERS TABLE DELETED");
-
-        } catch (SQLException e) {
-            System.out.println("Problem with deleting users table");
-            e.printStackTrace();
-        }
-    }
-
     public void updateUserDB(User u)
     {
         if(connection == null) {    return ;}
@@ -200,7 +182,7 @@ public class SQLConnector {
             while(resultSet.next()){
                 int id = resultSet.getInt(1);
                 String name = resultSet.getString(2);
-                int price = resultSet.getInt(3);
+                float price = resultSet.getFloat(3);
                 String chef = resultSet.getString(4);
                 String ingredientsString = resultSet.getString(5);
                 ArrayList<Ingredient> ingredients = new ArrayList<Ingredient>();
@@ -283,7 +265,7 @@ public class SQLConnector {
             while(resultSet.next()){
                 int id = resultSet.getInt(1);
                 String name = resultSet.getString(2);
-                int price = resultSet.getInt(3);
+                float price = resultSet.getFloat(3);
                 String chef = resultSet.getString(4);
                 String ingredientsString = resultSet.getString(5);
                 ArrayList<Ingredient> ingredients = new ArrayList<Ingredient>();
@@ -371,16 +353,16 @@ public class SQLConnector {
         }
     }
 
-    public int getMaxPriceFromDB(){
+    public float getMaxPriceFromDB(){
         
         if(connection == null) {return 0;}
-        int maxPrice = 0;
+        float maxPrice = 0;
         try {
             preparedStatement = connection.prepareStatement("SELECT MAX(food.PRICE) FROM food");
             resultSet = preparedStatement.executeQuery();
 
             while(resultSet.next()){
-                maxPrice = resultSet.getInt(1);
+                maxPrice = resultSet.getFloat(1);
             }
 
             return maxPrice;
@@ -391,16 +373,16 @@ public class SQLConnector {
         }
     }
 
-    public int getMinPriceFromDB(){
+    public float getMinPriceFromDB(){
         
         if(connection == null) {return 0;}
-        int minPrice = 0;
+        float minPrice = 0;
         try {
             preparedStatement = connection.prepareStatement("SELECT MIN(food.PRICE) FROM food");
             resultSet = preparedStatement.executeQuery();
 
             while(resultSet.next()){
-                minPrice = resultSet.getInt(1);
+                minPrice = resultSet.getFloat(1);
             }
 
             return minPrice;

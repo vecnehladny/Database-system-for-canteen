@@ -167,9 +167,9 @@ public class UserMenuController {
 	private void CalculateCheckoutPrice()
 	{
 		//Pocitanie ceny na zaklade produktov
-		int sum=0;
+		float sum=0;
 		for (FoodItem foodItem : orderItems) {
-			sum+=Integer.valueOf(foodItem.getPrice());
+			sum+=Float.valueOf(foodItem.getPrice());
 		}
 		priceLabel.setText(String.valueOf(sum)+ " E");	
 	}
