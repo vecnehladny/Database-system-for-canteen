@@ -402,14 +402,13 @@ public class SQLConnector {
         try {
 
             //vyberiem z tabulky potrebny pocet zaznamov na stranu
-            preparedStatement = connection.prepareStatement("SELECT * FROM ingredients");
+            preparedStatement = connection.prepareStatement("SELECT DISTINCT res.ingNAME FROM (SELECT i.ID AS ingID, REGEXP_SUBSTR(i.NAME,'[A-z[[:space:]]]+') AS ingNAME FROM ingredients AS i) as res");
             resultSet = preparedStatement.executeQuery();
 
             while(resultSet.next()){
-                int id = resultSet.getInt(1);
-                String name = resultSet.getString(2);
+                String name = resultSet.getString(1);
                 
-                list.add(new Ingredient(id,name));
+                list.add(new Ingredient(name));
             }
 
             return list;
