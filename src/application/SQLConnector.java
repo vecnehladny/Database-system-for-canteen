@@ -82,6 +82,7 @@ public class SQLConnector {
         if(connection == null) {return false;}
 
         try {
+            connection.setAutoCommit(false);
             preparedStatement = connection
                     .prepareStatement("INSERT INTO users (NAME,ADDRESS,PASSWORD,EMAIL,PRIVILEDGED) VALUES (?,?,?,?,?)");
             preparedStatement.setString(1, name);
@@ -92,16 +93,21 @@ public class SQLConnector {
             preparedStatement.executeUpdate();
 
             System.out.println("User: "+email+" passw: "+password+" added.");
+            connection.commit();
         } catch (SQLException e) {
             System.out.println("Problem with adding user - code "+ e.getErrorCode());
-            
             if(e.getErrorCode() == 1062){
             	System.out.println("User already exists!");
             }
             else {
                 e.printStackTrace();
             }
-            return false;
+            try{
+                if(connection != null)
+                    connection.rollback();
+            }catch(SQLException r){
+                System.out.println(r.getMessage());
+            }
         }
         return true;
     }
@@ -112,6 +118,7 @@ public class SQLConnector {
     {
         if(connection == null) {    return null;}
         try {
+            connection.setAutoCommit(false);
             preparedStatement = connection
                     .prepareStatement("SELECT * FROM users WHERE EMAIL = ?");
             preparedStatement.setString(1, email);
@@ -130,9 +137,16 @@ public class SQLConnector {
                         return temp;
                 }
             }
+            connection.commit();
         } catch (SQLException e) {
             System.out.println("Problem with checking user");
             e.printStackTrace();
+            try{
+                if(connection != null)
+                    connection.rollback();
+            }catch(SQLException r){
+                System.out.println(r.getMessage());
+            }
             return null;
         }
 
@@ -143,6 +157,7 @@ public class SQLConnector {
     {
         if(connection == null) {    return ;}
         try {
+            connection.setAutoCommit(false);
             preparedStatement = connection.prepareStatement("UPDATE users SET NAME=?, ADDRESS=?, PRIVILEDGED=? WHERE ID=?");
             preparedStatement.setString(1, u.getName());
             preparedStatement.setString(2, u.getAddress());
@@ -151,10 +166,16 @@ public class SQLConnector {
             int updated = preparedStatement.executeUpdate();
 
             System.out.println("Updating user id:"+u.getId());
-
+            connection.commit();
         } catch (SQLException e) {
             System.out.println("Problem with checking user");
             e.printStackTrace();
+            try{
+                if(connection != null)
+                    connection.rollback();
+            }catch(SQLException r){
+                System.out.println(r.getMessage());
+            }
         }
 
     }
@@ -168,6 +189,7 @@ public class SQLConnector {
         ArrayList<FoodItem> list = new ArrayList<FoodItem>();
 
         try {
+            connection.setAutoCommit(false);
             //zistim kolko je zaznamov v tabulke 
             f.setNumberOfRecords(getRecordNumberFromDB("food"));
 
@@ -204,12 +226,18 @@ public class SQLConnector {
                 }
                 list.add(new FoodItem(id,name,price,chef,ingredients));
             }
-
+            connection.commit();
             return list;
 
         } catch (SQLException e) {
             System.out.println("Problem with loading food from database");
             e.printStackTrace();
+            try{
+                if(connection != null)
+                    connection.rollback();
+            }catch(SQLException r){
+                System.out.println(r.getMessage());
+            }
             return null;
         }
 
@@ -252,6 +280,7 @@ public class SQLConnector {
         System.out.println(cmd);
 
         try {
+            connection.setAutoCommit(false);
             //zistim kolko je zaznamov v tabulke 
             p.setNumberOfRecords(getRecordNumberFromDB("food"));
 
@@ -301,12 +330,18 @@ public class SQLConnector {
             }
 
             resultSet.close();
-
+            connection.commit();
             return list;
 
         } catch (SQLException e) {
             System.out.println("Problem with loading food from database");
             e.printStackTrace();
+            try{
+                if(connection != null)
+                    connection.rollback();
+            }catch(SQLException r){
+                System.out.println(r.getMessage());
+            }
             return null;
         }
 
@@ -320,6 +355,7 @@ public class SQLConnector {
         ArrayList<Chef> list = new ArrayList<Chef>();
 
         try {
+            connection.setAutoCommit(false);
             //zistim kolko je zaznamov v tabulke
             f.setNumberOfRecords(getRecordNumberFromDB("chefs"));
             
@@ -338,12 +374,18 @@ public class SQLConnector {
                 
                 list.add(new Chef(id,name));
             }
-
+            connection.commit();
             return list;
 
         } catch (SQLException e) {
             System.out.println("Problem with loading chefs from database");
             e.printStackTrace();
+            try{
+                if(connection != null)
+                    connection.rollback();
+            }catch(SQLException r){
+                System.out.println(r.getMessage());
+            }
             return null;
         }
 
@@ -354,6 +396,7 @@ public class SQLConnector {
         int count = 0;
 
         try {
+            connection.setAutoCommit(false);
             preparedStatement = connection.prepareStatement("SELECT COUNT(*) FROM " + table);
             resultSet = preparedStatement.executeQuery();
 
@@ -361,9 +404,16 @@ public class SQLConnector {
                 count = resultSet.getInt(1);
                 System.out.println(count);
             }
+            connection.commit();
             return count;
         } catch (SQLException e) {
             e.printStackTrace();
+            try{
+                if(connection != null)
+                    connection.rollback();
+            }catch(SQLException r){
+                System.out.println(r.getMessage());
+            }
             return count;
         }
     }
@@ -373,17 +423,24 @@ public class SQLConnector {
         if(connection == null) {return 0;}
         float maxPrice = 0;
         try {
+            connection.setAutoCommit(false);
             preparedStatement = connection.prepareStatement("SELECT MAX(food.PRICE) FROM food");
             resultSet = preparedStatement.executeQuery();
 
             while(resultSet.next()){
                 maxPrice = resultSet.getFloat(1);
             }
-
+            connection.commit();
             return maxPrice;
             
         } catch (SQLException e) {
             e.printStackTrace();
+            try{
+                if(connection != null)
+                    connection.rollback();
+            }catch(SQLException r){
+                System.out.println(r.getMessage());
+            }
             return maxPrice;
         }
     }
@@ -393,17 +450,24 @@ public class SQLConnector {
         if(connection == null) {return 0;}
         float minPrice = 0;
         try {
+            connection.setAutoCommit(false);
             preparedStatement = connection.prepareStatement("SELECT MIN(food.PRICE) FROM food");
             resultSet = preparedStatement.executeQuery();
 
             while(resultSet.next()){
                 minPrice = resultSet.getFloat(1);
             }
-
+            connection.commit();
             return minPrice;
             
         } catch (SQLException e) {
             e.printStackTrace();
+            try{
+                if(connection != null)
+                    connection.rollback();
+            }catch(SQLException r){
+                System.out.println(r.getMessage());
+            }
             return minPrice;
         }
     }
@@ -415,7 +479,7 @@ public class SQLConnector {
         ArrayList<Ingredient> list = new ArrayList<Ingredient>();
 
         try {
-
+            connection.setAutoCommit(false);
             //vyberiem z tabulky potrebny pocet zaznamov na stranu
             preparedStatement = connection.prepareStatement("SELECT DISTINCT res.ingNAME FROM (SELECT i.ID AS ingID, REGEXP_SUBSTR(i.NAME,'[A-z[[:space:]]]+') AS ingNAME FROM ingredients AS i) as res");
             resultSet = preparedStatement.executeQuery();
@@ -425,12 +489,18 @@ public class SQLConnector {
                 
                 list.add(new Ingredient(name));
             }
-
+            connection.commit();
             return list;
 
         } catch (SQLException e) {
             System.out.println("Problem with loading Ingredients from database");
             e.printStackTrace();
+            try{
+                if(connection != null)
+                    connection.rollback();
+            }catch(SQLException r){
+                System.out.println(r.getMessage());
+            }
             return null;
         }
 
@@ -444,6 +514,7 @@ public class SQLConnector {
         ArrayList<Ingredient> list = new ArrayList<Ingredient>();
 
         try {
+            connection.setAutoCommit(false);
             //zistim kolko je zaznamov v tabulke 
             f.setNumberOfRecords(getRecordNumberFromDB("ingredients"));
 
@@ -462,12 +533,18 @@ public class SQLConnector {
                 
                 list.add(new Ingredient(id,name));
             }
-
+            connection.commit();
             return list;
 
         } catch (SQLException e) {
             System.out.println("Problem with loading Ingredients from database");
             e.printStackTrace();
+            try{
+                if(connection != null)
+                    connection.rollback();
+            }catch(SQLException r){
+                System.out.println(r.getMessage());
+            }
             return null;
         }
 
@@ -481,6 +558,7 @@ public class SQLConnector {
         ArrayList<User> list = new ArrayList<User>();
 
         try {
+            connection.setAutoCommit(false);
             //zistim kolko je zaznamov v tabulke 
             f.setNumberOfRecords(getRecordNumberFromDB("users"));
 
@@ -502,12 +580,18 @@ public class SQLConnector {
                 
                 list.add(new User(id,name,address,email,privileged));
             }
-
+            connection.commit();
             return list;
 
         } catch (SQLException e) {
             System.out.println("Problem with loading Ingredients from database");
             e.printStackTrace();
+            try{
+                if(connection != null)
+                    connection.rollback();
+            }catch(SQLException r){
+                System.out.println(r.getMessage());
+            }
             return null;
         }
 
