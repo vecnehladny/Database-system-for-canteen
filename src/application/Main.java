@@ -16,14 +16,8 @@ public class Main extends Application {
 	
 	@Override
 	public void start(Stage primaryStage) {
-		Application.setUserAgentStylesheet(getClass().getResource("stylesheet.css").toExternalForm());
+		//Application.setUserAgentStylesheet(getClass().getResource("stylesheet.css").toExternalForm());
 			
-		//Nechceme aby sa DB vytvarala pomocou kodu
-		/*showLoadingPage(primaryStage);
-		SQLConnector connector = new SQLConnector();
-		connector.connectToDB();
-		connector.closeConnection();*/
-		//primaryStage.close();
 		
 		//DataFaker dataFaker = new DataFaker();
 		//dataFaker.initFaker();
@@ -43,19 +37,4 @@ public class Main extends Application {
 	public static void main(String[] args) {
 		launch(args);
 	}
-	
-	/*
-	private void showLoadingPage(Stage primaryStage)
-	{
-		//Prerobit na fxml
-		BorderPane rootAnchorPane = new BorderPane();
-		Scene scene = new Scene(rootAnchorPane);
-		final Label loadingLabel = new Label("loading");
-		rootAnchorPane.setCenter(loadingLabel);
-		primaryStage.setScene(scene);
-		primaryStage.setResizable(false);
-		primaryStage.setTitle(LOGIN_STRING);
-		primaryStage.show();		
-	}
-	*/
 }

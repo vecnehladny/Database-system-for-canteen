@@ -37,9 +37,10 @@ public class LoginScreenController {
 		//Kontrola prazdnych poli
 		if(passwordField.getText().isEmpty() || emailField.getText().isEmpty())
 		{
-			showAlertBox("Please enter your email and password");
+			showAlertBox("Please enter your email and password!");
 			return;
 		}
+				
 		
 		//Overenie pouzivatela v DB - vrati objekt User ak najde alebo null ak nenajde
 		SQLConnector connector = new SQLConnector();
@@ -134,5 +135,6 @@ public class LoginScreenController {
         }
 		);
 	}
+	
 	
 }
