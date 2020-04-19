@@ -144,7 +144,6 @@ public class FoodFilterController {
 	}
 	
 	//Tato metoda zavola metodu v food menu a tam sa nastavi filtrovanie food tabulky.
-	//TODO vyresetovat paging pri aplikovani filtra
 	public void saveChanges(ActionEvent event)
 	{
 		System.out.println("Filter used!!");

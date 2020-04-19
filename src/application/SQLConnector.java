@@ -22,7 +22,7 @@ public class SQLConnector {
     private ResultSet resultSet = null;
    
     private String username = "root";
-    private String password = "root";
+    private String password = "infernoinferno";
     
     
     //Nacitanie drivera a pripojenie k databaze
@@ -40,7 +40,7 @@ public class SQLConnector {
         try {
         	//Localhost databaza - bude lepsia pri 1milione zaznamoch
         	connection = DriverManager
-                    .getConnection("jdbc:mysql://localhost:3306/dbs_db?characterEncoding=latin1",username, password);
+                    .getConnection("jdbc:mysql://localhost:3306/dbs_db1?characterEncoding=latin1",username, password);
             System.out.println("Database Connected");
         	
              
@@ -163,6 +163,7 @@ public class SQLConnector {
         
         if(connection == null) {    return null;}
 
+        f.setFiltered(false);
         int startFrom = (f.getPage() - 1) * (int)(f.getResultsPerPage());
         ArrayList<FoodItem> list = new ArrayList<FoodItem>();
 
@@ -217,10 +218,11 @@ public class SQLConnector {
     public ArrayList<FoodItem> getFoodListFromDB(Paging p, Filter f) {
 		if(connection == null) {    return null;}
 
+        p.setFiltered(true);
         int startFrom = (p.getPage() - 1) * (int)(p.getResultsPerPage());
         ArrayList<FoodItem> list = new ArrayList<FoodItem>();
 
-        StringBuilder cmd = new StringBuilder("SELECT f.ID, f.NAME, f.PRICE, ch.NAME, GROUP_CONCAT(i.name) as igroup FROM food f JOIN food_chef fc ON fc.FOOD_ID = f.ID JOIN chefs ch ON ch.ID = fc.CHEF_ID LEFT JOIN food_ingredients fi ON fi.FOOD_ID = f.ID LEFT JOIN ingredients i ON fi.INGREDIENTS_ID = i.ID ");
+        StringBuilder cmd = new StringBuilder("SELECT SQL_CALC_FOUND_ROWS f.ID, f.NAME, f.PRICE, ch.NAME, GROUP_CONCAT(i.name) as igroup FROM food f JOIN food_chef fc ON fc.FOOD_ID = f.ID JOIN chefs ch ON ch.ID = fc.CHEF_ID LEFT JOIN food_ingredients fi ON fi.FOOD_ID = f.ID LEFT JOIN ingredients i ON fi.INGREDIENTS_ID = i.ID ");
         cmd.append("GROUP BY fc.ID ");
         cmd.append("HAVING f.PRICE <= " + f.getMaxPrice() + " ");
 
@@ -257,7 +259,7 @@ public class SQLConnector {
             p.setTotalPages(Math.ceil(p.getNumberOfRecords() / p.getResultsPerPage()));
 
             //vyberiem z tabulky potrebny pocet zaznamov na stranu
-            preparedStatement = connection.prepareStatement(cmd.toString() + "?,?");
+            preparedStatement = connection.prepareStatement(cmd.toString() + "?,?;");
             preparedStatement.setInt(1, startFrom);
             preparedStatement.setInt(2, (int)(p.getResultsPerPage()));
             resultSet = preparedStatement.executeQuery();
@@ -286,6 +288,19 @@ public class SQLConnector {
                 }
                 list.add(new FoodItem(id,name,price,chef,ingredients));
             }
+
+            resultSet.close();
+
+            preparedStatement = connection.prepareStatement("SELECT FOUND_ROWS() AS rowCount;");
+            resultSet = preparedStatement.executeQuery();
+
+            while(resultSet.next()){
+                double numberOfRec = resultSet.getInt(1);
+                p.setNumberOfRecords(numberOfRec);
+                System.out.println("---->"+numberOfRec);
+            }
+
+            resultSet.close();
 
             return list;
 

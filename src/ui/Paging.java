@@ -2,16 +2,25 @@ package ui;
 
 public class Paging {
 
-    private int page = 1;
-	  private double totalPages;
-	  private double numberOfRecords;
-    private double resultsPerPage = 23;
+  private int page = 1;
+  private double totalPages;
+  private double numberOfRecords;
+  private double resultsPerPage = 23;
+  private boolean filtered = false;
 
-    public Paging(){
+  public Paging() {
 
-    }
+  }
 
-    public Paging(double resultsPerPage){
+  public boolean isFiltered() {
+    return filtered;
+  }
+
+  public void setFiltered(boolean filter) {
+    this.filtered = filter;
+  }
+
+  public Paging(double resultsPerPage) {
       setResultsPerPage(resultsPerPage);
     }
     

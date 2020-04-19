@@ -98,9 +98,6 @@ public class ChefsVBoxController extends Paging {
 		    return tRow ;
 		});	
 		
-		//TODO pridat nacitanie z DB
-		
-		//Debug
 		update();
 	}
 

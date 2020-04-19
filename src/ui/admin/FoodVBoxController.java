@@ -37,7 +37,8 @@ import ui.FoodFilterController;
 
 public class FoodVBoxController {
 
-	public Paging paging = new Paging(); 
+	public Paging paging = new Paging();
+	public Filter filter; 
 
 	@FXML
 	Button foodFilterBtn, foodNextBtn, foodPreviousBtn;
@@ -58,14 +59,25 @@ public class FoodVBoxController {
 			if (paging.getPage() < paging.getTotalPages()) {
 				paging.incrementPage();
 				System.out.println("idem na stranu: " + paging.getPage());
-				updateFoodList();
+				if(paging.isFiltered()){
+					updateFoodList(filter);
+				}
+				else {
+					updateFoodList();
+				}
+				
 			}
 		});
 		foodPreviousBtn.setOnAction(e -> {
 			if (paging.getPage() > 1) {
 				paging.decrementPage();
 				System.out.println("idem na stranu: " + paging.getPage());
-				updateFoodList();
+				if(paging.isFiltered()){
+					updateFoodList(filter);
+				}
+				else {
+					updateFoodList();
+				}
 			}
 		});
 
@@ -136,6 +148,7 @@ public class FoodVBoxController {
 	}
 
 	public void changeFoodFilter(Filter f) {
+		filter = f;
 		foodTableView.getItems().clear();
 		SQLConnector connector = new SQLConnector();
 		connector.connectToDB();
