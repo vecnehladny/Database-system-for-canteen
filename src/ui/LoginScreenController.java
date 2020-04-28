@@ -29,7 +29,16 @@ public class LoginScreenController {
 	private String REGISTRATION_TITLE = "Registration";
 	private String USER_MENU_TITLE = "User Main Menu";
 	private String ADMIN_MENU_TITLE = "Admin Main Menu";
+	SQLConnector connector;
 	
+	public void initialize() {
+		new Thread() {
+			public void run() {
+				connector = new SQLConnector();
+			}
+		}.start();
+	}
+		
 	public void logInButtonPressed(ActionEvent event)
 	{		
 		System.out.println("Log in button pressed");
@@ -42,11 +51,13 @@ public class LoginScreenController {
 		}
 				
 		
-		//Overenie pouzivatela v DB - vrati objekt User ak najde alebo null ak nenajde
-		SQLConnector connector = new SQLConnector();
-		connector.connectToDB();	
-		if(connector.isConnectedToDB())
-		{
+		//Overenie pouzivatela v DB - vrati objekt User ak najde alebo null ak nenajde	
+		try {
+			//Ak je uzivatel extremne rychly pri zadavani udajov tak sa to moze stat ale len 1-2x :)
+			while(connector == null) {
+				Thread.sleep(50);
+			}
+			
 			User temp = connector.getUserInDB(emailField.getText(), passwordField.getText());
 			if(temp == null)
 			{
@@ -57,20 +68,17 @@ public class LoginScreenController {
 				System.out.println("User ID in users table is "+ temp.getId());
 				if(temp.isPriviledged()){
 					System.out.println("LOADING ADMIN ACCOUNT");
-					connector.closeConnection();
 					loadMainMenuScene(event,true);
 					return;
 				}
 				else {
-					connector.closeConnection();
 					loadMainMenuScene(event,false);
 				}
 				
 			}
-		}
-		else 
-		{
-			showAlertBox("Error while connecting to database");
+		} catch (Exception e) {
+			e.printStackTrace();
+			showAlertBox("Error while connecting to database probably");
 		}
 	
 	}

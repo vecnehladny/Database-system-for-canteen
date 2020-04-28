@@ -1,5 +1,7 @@
 package application;
 	
+import java.util.logging.Level;
+
 import data.DataFaker;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;

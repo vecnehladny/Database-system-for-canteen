@@ -22,6 +22,15 @@ public class RegistrationScreenController {
 	@FXML TextField nameField;
 	@FXML TextField addressField;
 	@FXML Button registerButton;
+	SQLConnector connector;
+	
+	public void initialize() {
+		new Thread() {
+			public void run() {
+				connector = new SQLConnector();
+			}
+		}.start();
+	}
 	
 	public void registerUser()
 	{
@@ -95,17 +104,19 @@ public class RegistrationScreenController {
 		}
 		
 		//Pridanie pouzivatela do DB
-		SQLConnector connector = new SQLConnector();
-		connector.connectToDB();
-		
-		if(connector.isConnectedToDB())
-		{
+		try {
+			
+			//Ak je uzivatel extremne rychly pri zadavani udajov, vacsinou sa to ale nestane ani raz
+			while(connector == null) {
+				Thread.sleep(50);
+			}
+			
 			boolean result = connector.addUserToDB(nameField.getText(), addressField.getText(), 
 					passwordField1.getText(), emailField.getText());
 			
 			if(!result)
 			{
-				showAlertBox("Adding user failed");
+				showAlertBox("Adding user failed - your username is probably taken");
 			}
 			else 
 			{
@@ -130,10 +141,8 @@ public class RegistrationScreenController {
 				stage.close();
 				
 			}
-		}
-		else 
-		{
-			showAlertBox("Error while connecting to database");
+		}catch (Exception e) {
+			e.printStackTrace();
 		}
 	}
 	
@@ -164,7 +173,7 @@ public class RegistrationScreenController {
     }
     
     private boolean isValidPostalAdress(String adress) {
-    	String control = "[A-Za-z0-9'.-,]"; 
+    	String control = "[A-Za-z0-9'.-/, ]+"; 
     	return adress.matches(control);
     }
 }

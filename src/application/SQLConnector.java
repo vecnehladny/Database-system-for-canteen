@@ -4,6 +4,16 @@ import java.lang.reflect.InvocationTargetException;
 import java.sql.*;
 import java.util.ArrayList;
 
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.EntityTransaction;
+import javax.persistence.Persistence;
+import javax.persistence.TypedQuery;
+
+import org.hibernate.exception.ConstraintViolationException;
+
+import com.mysql.jdbc.exceptions.MySQLIntegrityConstraintViolationException;
+
 import ui.Filter;
 import ui.Paging;
 
@@ -22,8 +32,10 @@ public class SQLConnector {
     private ResultSet resultSet = null;
    
     private String username = "root";
-    private String password = "infernoinferno";
+    private String password = "root";
     
+    private static EntityManagerFactory ENTITY_MANAGER = Persistence.createEntityManagerFactory("MyEntManager");
+       
     
     //Nacitanie drivera a pripojenie k databaze
     public void connectToDB()
@@ -40,7 +52,7 @@ public class SQLConnector {
         try {
         	//Localhost databaza - bude lepsia pri 1milione zaznamoch
         	connection = DriverManager
-                    .getConnection("jdbc:mysql://localhost:3306/dbs_db1?characterEncoding=latin1",username, password);
+                    .getConnection("jdbc:mysql://localhost:3306/dbs_db?characterEncoding=latin1",username, password);
             System.out.println("Database Connected");
         	
              
@@ -79,105 +91,80 @@ public class SQLConnector {
     //Vrati true ak bola akcia uspesna inak false
     public boolean addUserToDB(String name,String address, String password,String email)
     {
-        if(connection == null) {return false;}
-
-        try {
-            connection.setAutoCommit(false);
-            preparedStatement = connection
-                    .prepareStatement("INSERT INTO users (NAME,ADDRESS,PASSWORD,EMAIL,PRIVILEDGED) VALUES (?,?,?,?,?)");
-            preparedStatement.setString(1, name);
-            preparedStatement.setString(2, address);
-            preparedStatement.setString(3, MD5Hashing.getSecurePassword(password));
-            preparedStatement.setString(4, email);
-            preparedStatement.setBoolean(5, false);
-            preparedStatement.executeUpdate();
-
-            System.out.println("User: "+email+" passw: "+password+" added.");
-            connection.commit();
-        } catch (SQLException e) {
-            System.out.println("Problem with adding user - code "+ e.getErrorCode());
-            if(e.getErrorCode() == 1062){
-            	System.out.println("User already exists!");
-            }
-            else {
-                e.printStackTrace();
-            }
-            try{
-                if(connection != null)
-                    connection.rollback();
-            }catch(SQLException r){
-                System.out.println(r.getMessage());
-            }
-        }
-        return true;
+    	EntityManager entityManager = ENTITY_MANAGER.createEntityManager();
+    	boolean result = true;
+    	EntityTransaction entityTransaction = null;
+    	
+    	try {
+    		entityTransaction = entityManager.getTransaction();
+    		entityTransaction.begin();
+    		User user = new User(name,address,email,false,MD5Hashing.getSecurePassword(password));
+    		entityManager.persist(user);
+    		entityTransaction.commit();
+    		
+    	}catch(Exception e) {
+    		result = false;
+    		if(entityTransaction !=null) {
+    			entityTransaction.rollback();
+    		}
+    		e.printStackTrace();
+    	}finally {
+    		entityManager.close();
+    	}
+    	
+    	return result;
     }
 
-
-    //Skontroluje, ci sa v DB nachadza dany pouzivatel aj s heslom ak ano vrati objekt User
+    //Skontroluje, ci sa v DB nachadza dany pouzivatel aj s heslom ak ano vrati objekt User    
     public User getUserInDB(String email, String password)
     {
-        if(connection == null) {    return null;}
-        try {
-            connection.setAutoCommit(false);
-            preparedStatement = connection
-                    .prepareStatement("SELECT * FROM users WHERE EMAIL = ?");
-            preparedStatement.setString(1, email);
-            resultSet = preparedStatement.executeQuery();
-
-            System.out.println("Checking if user exists");
-
-            //Porovnava aj email kedze select je case insensitive
-            while(resultSet.next())
-            {
-                String recievedPass = resultSet.getString("PASSWORD");
-                String recievedEmail = resultSet.getString("EMAIL");
-
-                if(recievedPass.equals(MD5Hashing.getSecurePassword(password)) && email.equals(recievedEmail)) {
-                        User temp = new User(resultSet.getInt("ID"),resultSet.getString("NAME"),resultSet.getString("ADDRESS"),resultSet.getString("EMAIL"),resultSet.getBoolean("PRIVILEDGED"));
-                        return temp;
-                }
-            }
-            connection.commit();
-        } catch (SQLException e) {
-            System.out.println("Problem with checking user");
-            e.printStackTrace();
-            try{
-                if(connection != null)
-                    connection.rollback();
-            }catch(SQLException r){
-                System.out.println(r.getMessage());
-            }
-            return null;
-        }
-
-        return null;
+    	EntityManager entityManager = ENTITY_MANAGER.createEntityManager();
+    	User user = null;
+    	
+    	try {
+    		String query = "SELECT u FROM User u WHERE u.email = :email"; 
+    		TypedQuery<User> typedQuery = entityManager.createQuery(query,User.class);
+    		typedQuery.setParameter("email",email);
+    		user = typedQuery.getSingleResult();
+    		
+    		//Al ke vysledok zly tak vratime null
+    		if(!user.getPassword().equals(MD5Hashing.getSecurePassword(password))) {
+    			user = null;
+    		}
+    		
+    	} catch(Exception e) {
+    		e.printStackTrace();
+    	} finally {
+    		entityManager.close();
+    	}
+    	
+    	return user;
     }
-
-    public void updateUserDB(User u)
-    {
-        if(connection == null) {    return ;}
-        try {
-            connection.setAutoCommit(false);
-            preparedStatement = connection.prepareStatement("UPDATE users SET NAME=?, ADDRESS=?, PRIVILEDGED=? WHERE ID=?");
-            preparedStatement.setString(1, u.getName());
-            preparedStatement.setString(2, u.getAddress());
-            preparedStatement.setBoolean(3, u.isPriviledged());
-            preparedStatement.setInt(4, u.getId());
-            int updated = preparedStatement.executeUpdate();
-
-            System.out.println("Updating user id:"+u.getId());
-            connection.commit();
-        } catch (SQLException e) {
-            System.out.println("Problem with checking user");
-            e.printStackTrace();
-            try{
-                if(connection != null)
-                    connection.rollback();
-            }catch(SQLException r){
-                System.out.println(r.getMessage());
-            }
-        }
-
+    
+    public void updateUserDB(User u) {
+    	EntityManager entityManager = ENTITY_MANAGER.createEntityManager();
+    	EntityTransaction entityTransaction = null;
+    	User user = null;
+    	try {
+    		entityTransaction = entityManager.getTransaction();
+    		entityTransaction.begin();
+    		
+    		user = entityManager.find(User.class, u.getId());
+    		user.setAddress(u.getAddress());
+    		user.setName(u.getName());
+    		user.setPriviledged(u.isPriviledged());
+    		
+    		entityManager.persist(user);
+    		entityTransaction.commit();
+    		
+    	}catch(Exception e) {
+    		if(entityTransaction !=null) {
+    			entityTransaction.rollback();
+    		}
+    		e.printStackTrace();
+    	}finally {
+    		entityManager.close();
+    	}
     }
 
     public ArrayList<FoodItem> getFoodListFromDB(Paging f){
