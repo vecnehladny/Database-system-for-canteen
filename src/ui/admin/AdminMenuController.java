@@ -26,7 +26,7 @@ public class AdminMenuController {
 	//Zavola sa pri prepnuti sceny
 	public void initialize()
 	{
-		loadFoodVBox();
+		//loadFoodVBox();
 	}	
 	
 	public void logOut(ActionEvent event)

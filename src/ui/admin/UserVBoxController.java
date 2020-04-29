@@ -36,21 +36,41 @@ public class UserVBoxController {
 	@FXML TableView<User> userTableView;
 	@FXML TextField userSearchField;
 	
+	SQLConnector connector = new SQLConnector();
+	
+	//Premenne pre vyhladavanie
+	boolean searching = false;
+	String searchName;
+	
 	public void initialize()
 	{
+		//paging.setPage(47000);
 		System.out.println("initialize() userVBoxController");
 		
 		userSearchBtn.setOnAction(e->{
-			System.out.println("Searching for "+userSearchField.getText());
-			//TODO user vyhladavanie
+			searchName = userSearchField.getText();
+			System.out.println("Searching for "+searchName);
+			if(!searchName.isEmpty()) {
+				paging = new Paging();
+				searching = true;
+				updateUsersListSearching();
+			}
 		});	
 		
 		//Pridat funckie next a previous - aby sme nezobrazili 1milion zaznamom naraz
 		userNextBtn.setOnAction(e->{
-			System.out.println("Next btn pressed");
+				paging.incrementPage();
+				if(!searching)
+					updateUsersList();
+				else
+					updateUsersListSearching();
 		});
 		userPreviousBtn.setOnAction(e->{
-			System.out.println("Previous btn pressed");
+				paging.decrementPage();
+				if(!searching)
+					updateUsersList();
+				else
+					updateUsersListSearching();
 		});		
 		
 		//Vytvorenie moznosti pri kliku praveho tlacidla
@@ -101,22 +121,40 @@ public class UserVBoxController {
 		    return tRow ;
 		});	
 		
-		updateUserList();
+		updateUsersList();
 
 	}
-
-	public void updateUserList() {
+	
+	public void updateUsersList() {
+		userNextBtn.setDisable(false);
+		userPreviousBtn.setDisable(false);
+				
 		userTableView.getItems().clear();
-		SQLConnector connector = new SQLConnector();
-		connector.connectToDB();
-		if (connector.isConnectedToDB()) {
-			ArrayList<User> userList = connector.getUserListFromDB(paging);
-
-			for (User f : userList) {
-				userTableView.getItems().add(f);
-			}
+		userTableView.getItems().addAll(connector.getUserListFromDB(paging));
+		
+		if(userTableView.getItems().size() < paging.getResultsPerPage()) {
+			userNextBtn.setDisable(true);
 		}
-		connector.closeConnection();
+		if(paging.getPage() <=1) {
+			userPreviousBtn.setDisable(true);
+		}
+	}
+	
+	public void updateUsersListSearching() {
+		if(searchName.isEmpty()) {	return;}
+		
+		userNextBtn.setDisable(false);
+		userPreviousBtn.setDisable(false);
+		
+		userTableView.getItems().clear();
+		userTableView.getItems().addAll(connector.getSearchUsersInDB(searchName , paging));
+		
+		if(userTableView.getItems().size() < paging.getResultsPerPage()) {
+			userNextBtn.setDisable(true);
+		}
+		if(paging.getPage() <=1) {
+			userPreviousBtn.setDisable(true);
+		}
 	}
 	
 	private void openEditMenu(User user)
@@ -158,12 +196,14 @@ public class UserVBoxController {
             if(result.orElse(cancel) == okay)
             {
             	System.out.println("Pressed delete");
-            	userTableView.getItems().remove(user);
-            	//TODO vymazat zaznam user
+            	if(connector.removeUserFromDB(user)) {
+            		userTableView.getItems().remove(user);
+            	}
             }
         }
 		);
 	}
+	
 	
 }
 
@@ -181,22 +221,17 @@ class UsersEditController
 		priviledgedCheckbox.setSelected(user.isPriviledged());
 		
 		saveBtn.setOnAction(e-> {
+			SQLConnector connector = new SQLConnector();
 			System.out.println("Changes saved!");
 			user.setName(nameField.getText());
 			user.setPriviledged(priviledgedCheckbox.isSelected());
 			user.setAddress(addressField.getText());
-			table.refresh();
-			updateUserInfo(user);
+			if(connector.updateUserDB(user,false))
+			{	
+				table.refresh();
+			}
 			stage.close();
 		});
 	}
 
-	public void updateUserInfo(User u){
-		SQLConnector connector = new SQLConnector();
-		connector.connectToDB();
-		if (connector.isConnectedToDB()) {
-			connector.updateUserDB(u);
-		}
-		connector.closeConnection();
-	}
 }

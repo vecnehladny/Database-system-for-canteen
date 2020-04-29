@@ -114,7 +114,7 @@
     /* A little darker than -fx-base and used as the -fx-color for the
      * "armed" pseudoclass state.
      *
-     * TODO: should this be renamed to -fx-armed-base?
+     * should this be renamed to -fx-armed-base?
      */
     -fx-pressed-base: derive(-fx-base,-6%);
 
@@ -258,7 +258,7 @@
     /* The color to use as -fx-text-fill when painting text on top of
      * backgrounds filled with -fx-selection-bar.
      *
-     * TODO: this can be removed
+     * 
      */
     -fx-selection-bar-text: -fx-text-background-color;
 
@@ -1575,7 +1575,7 @@
     -fx-color: -fx-base;
 }
 .tab-pane > .tab-header-area > .tab-header-background {
-    /* TODO should not be using text-box-border I think? */
+    /* should not be using text-box-border I think? */
     -fx-background-color:
         -fx-outer-border,
         -fx-text-box-border,
@@ -1606,7 +1606,7 @@
 .tab-pane:right > .tab-header-area {
     -fx-padding: 0.416667em 0.416667em 0.166667em 0.0em; /* 5 5 2 0 */
 }
-/* TODO: scaling the shape seems to make it way too large */
+/* scaling the shape seems to make it way too large */
 .tab-pane > .tab-header-area > .headers-region > .tab > .tab-container > .tab-close-button {
     -fx-background-color: -fx-mark-color;
     -fx-shape: "M 0,0 H1 L 4,3 7,0 H8 V1 L 5,4 8,7 V8 H7 L 4,5 1,8 H0 V7 L 3,4 0,1 Z";
@@ -1627,7 +1627,7 @@
     -fx-background-radius: 10;
 }
 .tab-pane:bottom > .tab-header-area > .control-buttons-tab > .container > .tab-down-button {
-    -fx-padding: -5 4 4 4; /* TODO convert to ems */
+    -fx-padding: -5 4 4 4; 
 }
 /* FLOATING TABS CUSTOMISATION */
 .tab-pane.floating > .tab-header-area > .tab-header-background {

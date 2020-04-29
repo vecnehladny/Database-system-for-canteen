@@ -8,6 +8,7 @@ import application.SQLConnector;
 import ui.Paging;
 
 import data.Chef;
+import data.Ingredient;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -29,27 +30,47 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 
-public class ChefsVBoxController extends Paging {
+public class ChefsVBoxController{
 
 	@FXML Button chefsSearchBtn,chefsNextBtn,chefsPreviousBtn;	
 	@FXML TableView<Chef> chefsTableView;
 	@FXML TextField chefsSearchField;
+	
+	SQLConnector connector = new SQLConnector();
+	Paging paging = new Paging();
+	
+	//Premenne pre vyhladavanie
+	boolean searching = false;
+	String searchName;
 	
 	public void initialize()
 	{
 		System.out.println("initialize() ChefsVBoxController");
 		
 		chefsSearchBtn.setOnAction(e->{
-			System.out.println("Searching for "+chefsSearchField.getText());
-			//TODO chef vyhladavanie
+			searchName =chefsSearchField.getText(); 
+			System.out.println("Searching for "+searchName);
+			if(!searchName.isEmpty()) {
+				paging = new Paging();
+				searching = true;
+				updateChefsListSearching();
+			}
 		});	
 		
 		//Pridat funckie next a previous - aby sme nezobrazili 1milion zaznamom naraz
 		chefsNextBtn.setOnAction(e->{
-			System.out.println("Next btn pressed");
+				paging.incrementPage();
+				if(!searching)
+					updateChefsList();
+				else
+					updateChefsListSearching();
 		});
 		chefsPreviousBtn.setOnAction(e->{
-			System.out.println("Previous btn pressed");
+				paging.decrementPage();
+				if(!searching)
+					updateChefsList();
+				else
+					updateChefsListSearching();
 		});
 		
 		//Vytvorenie moznosti pri kliku praveho tlacidla
@@ -97,22 +118,40 @@ public class ChefsVBoxController extends Paging {
 		    });
 		    return tRow ;
 		});	
-		
-		update();
+
+		updateChefsList();
 	}
 
-	public void update() {
+	
+	public void updateChefsList() {
+		chefsNextBtn.setDisable(false);
+		chefsPreviousBtn.setDisable(false);
+		
 		chefsTableView.getItems().clear();
-		SQLConnector connector = new SQLConnector();
-		connector.connectToDB();
-		if (connector.isConnectedToDB()) {
-			ArrayList<Chef> chefList = connector.getChefListFromDB(this);
-
-			for (Chef ch : chefList) {
-				chefsTableView.getItems().add(ch);
-			}
+		chefsTableView.getItems().addAll(connector.getChefListFromDB(paging));
+		
+		if(chefsTableView.getItems().size() < paging.getResultsPerPage()) {
+			chefsNextBtn.setDisable(true);
 		}
-		connector.closeConnection();
+		if(paging.getPage() <=1) {
+			chefsPreviousBtn.setDisable(true);
+		}
+	}
+	
+	public void updateChefsListSearching() {
+		if(searchName.isEmpty()) {	return;}
+		chefsNextBtn.setDisable(false);
+		chefsPreviousBtn.setDisable(false);
+		
+		chefsTableView.getItems().clear();
+		chefsTableView.getItems().addAll(connector.getSearchChefsInDB(searchName , paging));
+		
+		if(chefsTableView.getItems().size() < paging.getResultsPerPage()) {
+			chefsNextBtn.setDisable(true);
+		}
+		if(paging.getPage() <=1) {
+			chefsPreviousBtn.setDisable(true);
+		}
 	}
 	
 	private void openEditMenu(Chef chef)
@@ -154,8 +193,9 @@ public class ChefsVBoxController extends Paging {
             if(result.orElse(cancel) == okay)
             {
             	System.out.println("Pressed delete");
-            	chefsTableView.getItems().remove(chef);
-            	//TODO vymazat zaznam chef
+            	if(connector.removeChefFromDB(chef)) {
+            		chefsTableView.getItems().remove(chef);
+            	}
             }
         }
 		);
@@ -175,9 +215,11 @@ class ChefsEditController
 		
 		saveBtn.setOnAction(e-> {
 			System.out.println("Changes saved!");
+			SQLConnector connector = new SQLConnector();
 			chef.setName(nameField.getText());
-			table.refresh();
-			//TODO ulozit zmeny chef
+			if(connector.updateChefDB(chef)) {
+				table.refresh();
+			}
 			stage.close();
 		});
 	}

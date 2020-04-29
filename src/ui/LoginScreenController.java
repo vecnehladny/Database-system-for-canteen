@@ -17,6 +17,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import ui.user.UserMenuController;
 import javafx.scene.*;
 
 public class LoginScreenController {
@@ -68,11 +69,11 @@ public class LoginScreenController {
 				System.out.println("User ID in users table is "+ temp.getId());
 				if(temp.isPriviledged()){
 					System.out.println("LOADING ADMIN ACCOUNT");
-					loadMainMenuScene(event,true);
+					loadMainMenuScene(event,true,temp);
 					return;
 				}
 				else {
-					loadMainMenuScene(event,false);
+					loadMainMenuScene(event,false,temp);
 				}
 				
 			}
@@ -104,7 +105,7 @@ public class LoginScreenController {
 		}
 	}
 	
-	public void loadMainMenuScene(ActionEvent event,boolean isPriviledged)
+	public void loadMainMenuScene(ActionEvent event,boolean isPriviledged, User user)
 	{		
 		try {
 			Parent root;
@@ -116,7 +117,10 @@ public class LoginScreenController {
 				stage.setTitle(ADMIN_MENU_TITLE);
 			}
 			else {
-				root = FXMLLoader.load(getClass().getResource("/ui/user/UserMenu.fxml"));
+				FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/user/UserMenu.fxml"));	
+				root = loader.load();
+				UserMenuController con = loader.getController();		
+				con.setUser(user);
 				stage.setTitle(USER_MENU_TITLE);
 			}
 			Scene scene = new Scene(root);		

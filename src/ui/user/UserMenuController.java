@@ -1,13 +1,17 @@
 package ui.user;
 
 import java.io.IOException;
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import application.MD5Hashing;
 import application.SQLConnector;
 import data.FoodItem;
 import data.Ingredient;
+import data.User;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -21,6 +25,7 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.PasswordField;
 import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
@@ -37,6 +42,7 @@ import ui.Paging;
 public class UserMenuController {
 
 	public Paging paging = new Paging(); 
+	User user;
 
 	@FXML Button profileButton;
 	@FXML Button foodButton;
@@ -53,7 +59,8 @@ public class UserMenuController {
 	Button createOrderButton;	
 	
 	//Profile VBox UI
-	TextField nameField,addressField,passField1,passField2;
+	TextField nameField,addressField;
+	PasswordField passField1,passField2;
 	Button saveChangesButton;
 	
 	String LOGIN_STRING = "Login screen";
@@ -64,8 +71,12 @@ public class UserMenuController {
 	//Zavola sa pri prepnuti sceny
 	public void initialize()
 	{
-		loadFoodVBox();
+		//loadFoodVBox();
 	}	
+	
+	public void setUser(User user) {
+		this.user = user;
+	}
 	
 	//Zavretie aktualneho okna a otvorenie prihlasenia
 	public void logOut(ActionEvent event)
@@ -149,12 +160,6 @@ public class UserMenuController {
 			    return tRow ;
 			});
 			
-			//Debug
-			orderItems.clear();
-			for(int i=1;i<12;i++)
-			{
-				orderItems.add(new FoodItem(i, "Gulas"+i, i, "Jozko Mrkvicka",null));
-			}
 			orderTableView.getItems().addAll(orderItems);
 			
 			CalculateCheckoutPrice();
@@ -167,11 +172,14 @@ public class UserMenuController {
 	private void CalculateCheckoutPrice()
 	{
 		//Pocitanie ceny na zaklade produktov
+		DecimalFormat df = new DecimalFormat("0.00");
+		df.setRoundingMode(RoundingMode.DOWN);
 		float sum=0;
+		
 		for (FoodItem foodItem : orderItems) {
 			sum+=Float.valueOf(foodItem.getPrice());
 		}
-		priceLabel.setText(String.valueOf(sum)+ " E");	
+		priceLabel.setText(df.format(sum)+ " E");	
 	}
 	
 	public void loadProfileVBox()
@@ -190,26 +198,97 @@ public class UserMenuController {
 					addressField = (TextField) obj;
 				}
 				if(obj.getId().equals("passField1")){
-					passField1 = (TextField) obj;
+					passField1 = (PasswordField) obj;
 				}
 				if(obj.getId().equals("passField2")){
-					passField2 = (TextField) obj;
+					passField2 = (PasswordField) obj;
 				}
 				if(obj.getId().equals("saveChangesButton")){
 					saveChangesButton = (Button) obj;
 				}
 			}
 			
-			//TODO prednastavit aktualne hodnoty uzivatela
+			nameField.setText(user.getName());
+			addressField.setText(user.getAddress());
 			
 			saveChangesButton.setOnAction(e->{
-				System.out.println("Saved changes in profile!");
-				//TODO tu by mal byt update usera
-				loadFoodVBox();
+				System.out.println("Saved changes in profile!");	
+				
+				User updatedUser = new User();
+				updatedUser.setId(user.getId());
+				updatedUser.setName(nameField.getText());
+				updatedUser.setAddress(addressField.getText());
+				updatedUser.setEmail(user.getEmail());
+				updatedUser.setPriviledged(user.isPriviledged());
+				updatedUser.setPassword(user.getPassword());
+				
+				if(!passField1.getText().isEmpty() && !passField2.getText().isEmpty()) {
+					updatedUser.setPassword(MD5Hashing.getSecurePassword(passField1.getText()));
+				}
+				
+				SQLConnector con = new SQLConnector();
+				if(!validateInput() && con.updateUserDB(updatedUser,true)) {		
+					user = updatedUser;
+					loadFoodVBox();
+				}
 			});			
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	public boolean validateInput() {
+		StringBuilder errorString = new StringBuilder();
+		boolean error = false;
+		
+		List<TextField> textfields = new ArrayList<TextField>();
+		textfields.add(passField1);
+		textfields.add(passField2);
+		textfields.add(addressField);
+		textfields.add(nameField);
+		
+		for(TextField field: textfields) {
+			field.setStyle(null);
+		}
+		
+				
+		if(nameField.getText().isEmpty() || !isValidName(nameField.getText())) {
+			nameField.setStyle("-fx-background-color: red;");
+			error = true;
+			errorString.append("Please enter correct full name!\n");
+		}
+		
+		
+		if(addressField.getText().length() < 10 || !isValidPostalAdress(addressField.getText())) {
+			addressField.setStyle("-fx-background-color: red;");
+			error = true;
+			errorString.append("Invalid postal adress!\n");
+		}
+		
+
+		
+		if(!passField1.getText().equals(passField2.getText()))
+		{
+			passField1.setStyle("-fx-background-color: red;");
+			passField2.setStyle("-fx-background-color: red;");
+			error = true;
+			errorString.append("Passwords do not match\n");
+		}	
+		else {
+			if(!passField1.getText().isEmpty() && passField1.getText().length() < 8) {
+				passField1.setStyle("-fx-background-color: red;");
+				passField2.setStyle("-fx-background-color: red;");
+				error = true;
+				errorString.append("Password needs to be at least 8 characters long!\n");
+			}
+		}
+		
+		
+		if(error) {
+			showAlertBox(errorString.toString());
+		}		
+		
+		return error;
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -257,6 +336,11 @@ public class UserMenuController {
 				}
 			});
 			
+			// Vytvorenie moznosti pri kliku praveho tlacidla
+			MenuItem addMenu = new MenuItem("Add to checkout");
+			ContextMenu menu = new ContextMenu();
+			menu.getItems().addAll(addMenu);
+			
 			//Nacitanie tabulky
 			foodTableView.getColumns().get(0).setCellValueFactory(new PropertyValueFactory<>("name"));
 			foodTableView.getColumns().get(1).setCellValueFactory(new PropertyValueFactory<>("price"));
@@ -265,11 +349,26 @@ public class UserMenuController {
 			foodTableView.setRowFactory(e -> {
 			    TableRow<FoodItem> tRow = new TableRow<>();
 			    tRow.setOnMouseClicked(event -> {
-			        if (event.getClickCount() == 2 && !tRow.isEmpty() ) {
-			        	FoodItem food = tRow.getItem();
-			            System.out.println("ID OF CLICKED food "+food.getId());
-			            openDetailMenu(food);
-			        }
+					if (tRow.isEmpty())
+						return;
+					FoodItem food = tRow.getItem();
+					
+					// Vyboratie moznosti add
+					addMenu.setOnAction(new EventHandler<ActionEvent>() {
+
+						@Override
+						public void handle(ActionEvent event) {
+							System.out.println("Added to checkout " + food.getName());
+							orderItems.add(food);
+						}
+					});
+			    	
+					tRow.setContextMenu(menu);
+
+					if (event.getButton() == MouseButton.PRIMARY && event.getClickCount() == 2 && !tRow.isEmpty()) {
+						System.out.println("ID OF CLICKED food " + food.getId());
+						openDetailMenu(food);
+					}
 			    });
 			    return tRow ;
 			});
@@ -281,8 +380,11 @@ public class UserMenuController {
 			e.printStackTrace();
 		}
 	}
-
+	
 	public void updateFoodList() {
+		foodNextBtn.setDisable(false);
+		foodPreviousBtn.setDisable(false);
+		
 		foodTableView.getItems().clear();
 		SQLConnector connector = new SQLConnector();
 		connector.connectToDB();
@@ -294,9 +396,21 @@ public class UserMenuController {
 			}
 		}
 		connector.closeConnection();
+		
+		if(foodTableView.getItems().size() < paging.getResultsPerPage()) {
+			foodNextBtn.setDisable(true);
+		}
+		if(paging.getPage() <=1) {
+			foodPreviousBtn.setDisable(true);
+		}
 	}
+
+	
 	
 	public void changeFoodFilter(Filter f) {
+		foodNextBtn.setDisable(false);
+		foodPreviousBtn.setDisable(false);
+		
 		foodTableView.getItems().clear();
 		SQLConnector connector = new SQLConnector();
 		connector.connectToDB();
@@ -308,6 +422,13 @@ public class UserMenuController {
 			}
 		}
 		connector.closeConnection();
+		
+		if(foodTableView.getItems().size() < paging.getResultsPerPage()) {
+			foodNextBtn.setDisable(true);
+		}
+		if(paging.getPage() <=1) {
+			foodPreviousBtn.setDisable(true);
+		}
 	}
 	
 	//Vytvara upozornenie pri mazani
@@ -393,5 +514,28 @@ public class UserMenuController {
 			e.printStackTrace();
 		}
 	}
+	
+	//Vytvara chybove hlasky pri prihlasovani
+	private void showAlertBox(String problem)
+	{
+		Platform.runLater(() -> {
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Error!");
+            alert.setHeaderText(problem);
+            alert.showAndWait();
+        }
+		);
+	}
+    
+    //Skopirovane z https://stackoverflow.com/questions/35392798/regex-to-validate-full-name-having-atleast-four-characters
+    public static boolean isValidName(String name) {
+        String control = "^[a-zA-Z]{4,}(?: [a-zA-Z]+){1,2}$"; 
+        return name.matches(control);        
+    }
+    
+    private boolean isValidPostalAdress(String adress) {
+    	String control = "[A-Za-z0-9'.-/, ]+"; 
+    	return adress.matches(control);
+    }
 	
 }

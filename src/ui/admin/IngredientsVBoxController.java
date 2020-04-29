@@ -35,27 +35,40 @@ public class IngredientsVBoxController {
 	@FXML TableView<Ingredient> ingredientTableView;
 	@FXML TextField ingredientsSearchField;
 	
+	SQLConnector connector = new SQLConnector();
+	
+	//Premenne pre vyhladavanie
+	boolean searching = false;
+	String searchName;
+	
 	public void initialize()
 	{
 		System.out.println("initialize() IngredientsVBoxController");
 		
 		ingredientsSearchBtn.setOnAction(e->{
-			System.out.println("Searching for "+ingredientsSearchField.getText());
-			//TODO ingredients vyhladavanie
+			searchName = ingredientsSearchField.getText();
+			System.out.println("Searching for "+searchName );
+			if(!searchName .isEmpty()) {
+				paging = new Paging();
+				searching = true;
+				updateIngListSearching();
+			}
 		});	
 		
 		//Pridat funckie next a previous - aby sme nezobrazili 1milion zaznamom naraz
 		ingredientNextBtn.setOnAction(e->{
-			if (paging.getPage() < paging.getTotalPages()) {
 				paging.incrementPage();
-				updateIngredientsList();
-			}
+				if(!searching)
+					updateIngredientsList();
+				else
+					updateIngListSearching();
 		});
 		ingredientPreviousBtn.setOnAction(e->{
-			if (paging.getPage() > 1) {
 				paging.decrementPage();
-				updateIngredientsList();
-			}
+				if(!searching)
+					updateIngredientsList();
+				else
+					updateIngListSearching();
 		});
 		
 		//Vytvorenie moznosti pri kliku praveho tlacidla
@@ -104,23 +117,38 @@ public class IngredientsVBoxController {
 		    return tRow ;
 		});	
 		
-		//TODO pridat nacitanie ingrediencii z DB
-		
 		updateIngredientsList();
 	}
 
 	public void updateIngredientsList() {
+		ingredientNextBtn.setDisable(false);
+		ingredientPreviousBtn.setDisable(false);
+				
 		ingredientTableView.getItems().clear();
-		SQLConnector connector = new SQLConnector();
-		connector.connectToDB();
-		if (connector.isConnectedToDB()) {
-			ArrayList<Ingredient> foodList = connector.getIngredientListFromDB(paging);
-
-			for (Ingredient f : foodList) {
-				ingredientTableView.getItems().add(f);
-			}
+		ingredientTableView.getItems().addAll(connector.getIngredientListFromDB(paging));
+		
+		if(ingredientTableView.getItems().size() < paging.getResultsPerPage()) {
+			ingredientNextBtn.setDisable(true);
 		}
-		connector.closeConnection();
+		if(paging.getPage() <=1) {
+			ingredientPreviousBtn.setDisable(true);
+		}
+	}
+	
+	public void updateIngListSearching() {
+		if(searchName.isEmpty()) {	return;}
+		ingredientNextBtn.setDisable(false);
+		ingredientPreviousBtn.setDisable(false);
+		
+		ingredientTableView.getItems().clear();
+		ingredientTableView.getItems().addAll(connector.getSearchIngsInDB(searchName , paging));
+		
+		if(ingredientTableView.getItems().size() < paging.getResultsPerPage()) {
+			ingredientNextBtn.setDisable(true);
+		}
+		if(paging.getPage() <=1) {
+			ingredientPreviousBtn.setDisable(true);
+		}
 	}
 	
 	private void openEditMenu(Ingredient ingredient)
@@ -163,8 +191,9 @@ public class IngredientsVBoxController {
             if(result.orElse(cancel) == okay)
             {
             	System.out.println("Pressed delete");
-            	ingredientTableView.getItems().remove(ing);
-            	//TODO vymazat zaznam ingredients
+            	if(connector.removeIngFromDB(ing)) {
+            		ingredientTableView.getItems().remove(ing);
+            	}
             }
         }
 		);
@@ -185,8 +214,10 @@ class IngEditController
 		saveBtn.setOnAction(e-> {
 			System.out.println("Changes saved!");
 			ing.setName(nameField.getText());
-			table.refresh();
-			//TODO ulozit zmeny ingredients
+			SQLConnector connector = new SQLConnector();
+			if(connector.updateIngDB(ing)) {
+				table.refresh();
+			}
 			stage.close();
 		});
 	}

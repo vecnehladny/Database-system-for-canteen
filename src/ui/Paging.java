@@ -3,8 +3,8 @@ package ui;
 public class Paging {
 
   private int page = 1;
-  private double totalPages;
-  private double numberOfRecords;
+  private double totalPages=0;
+  private double numberOfRecords=0;
   private double resultsPerPage = 23;
   private boolean filtered = false;
 

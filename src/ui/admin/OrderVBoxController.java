@@ -99,7 +99,7 @@ public class OrderVBoxController {
 		        tRow.setContextMenu(menu);
 		    	
 		        if (event.getButton() == MouseButton.PRIMARY && event.getClickCount() == 2 && !tRow.isEmpty() ) {
-		            //TODO zobrazit info - treba to? Ak hej treba dat vediet.
+		            //TODO zobrazit info - treba to?
 		            System.out.println("ID OF CLICKED ORDER "+order.getId());		            
 		        }
 		    });

@@ -52,13 +52,8 @@ public class FoodVBoxController {
 			openFilterMenu();
 		});
 
-		// Pridat funkcie addFood, next a previous - aby sme nezobrazili 1milion
-		// zaznamom naraz
 		foodNextBtn.setOnAction(e -> {
-			System.out.println(paging.getPage() + " " + paging.getTotalPages());
-			if (paging.getPage() < paging.getTotalPages()) {
 				paging.incrementPage();
-				System.out.println("idem na stranu: " + paging.getPage());
 				if(paging.isFiltered()){
 					updateFoodList(filter);
 				}
@@ -66,19 +61,15 @@ public class FoodVBoxController {
 					updateFoodList();
 				}
 				
-			}
 		});
 		foodPreviousBtn.setOnAction(e -> {
-			if (paging.getPage() > 1) {
 				paging.decrementPage();
-				System.out.println("idem na stranu: " + paging.getPage());
 				if(paging.isFiltered()){
 					updateFoodList(filter);
 				}
 				else {
 					updateFoodList();
 				}
-			}
 		});
 
 		// Vytvorenie moznosti pri kliku praveho tlacidla
@@ -134,6 +125,9 @@ public class FoodVBoxController {
 	}
 
 	public void updateFoodList() {
+		foodNextBtn.setDisable(false);
+		foodPreviousBtn.setDisable(false);
+		
 		foodTableView.getItems().clear();
 		SQLConnector connector = new SQLConnector();
 		connector.connectToDB();
@@ -145,9 +139,19 @@ public class FoodVBoxController {
 			}
 		}
 		connector.closeConnection();
+		
+		if(foodTableView.getItems().size() < paging.getResultsPerPage()) {
+			foodNextBtn.setDisable(true);
+		}
+		if(paging.getPage() <=1) {
+			foodPreviousBtn.setDisable(true);
+		}
 	}
 
 	public void changeFoodFilter(Filter f) {
+		foodNextBtn.setDisable(false);
+		foodPreviousBtn.setDisable(false);
+		
 		filter = f;
 		foodTableView.getItems().clear();
 		SQLConnector connector = new SQLConnector();
@@ -160,9 +164,19 @@ public class FoodVBoxController {
 			}
 		}
 		connector.closeConnection();
+		System.out.println("Fitler page "+paging.getPage());
+		
+		if(foodTableView.getItems().size() < paging.getResultsPerPage()) {
+			foodNextBtn.setDisable(true);
+		}
+		if(paging.getPage() <=1) {
+			foodPreviousBtn.setDisable(true);
+		}
 	}
 
 	public void updateFoodList(Filter f) {
+		foodNextBtn.setDisable(false);
+		foodPreviousBtn.setDisable(false);
 
 		foodTableView.getItems().clear();
 		SQLConnector connector = new SQLConnector();
@@ -175,6 +189,13 @@ public class FoodVBoxController {
 			}
 		}
 		connector.closeConnection();
+		
+		if(foodTableView.getItems().size() < paging.getResultsPerPage()) {
+			foodNextBtn.setDisable(true);
+		}
+		if(paging.getPage() <=1) {
+			foodPreviousBtn.setDisable(true);
+		}
 	}
 
 	// Otvori okno s filtrom
@@ -308,33 +329,6 @@ class FoodEditController
 			}
 		}
 	
-		//Debug
-		List<Ingredient> dIngredients = new ArrayList<>();
-		dIngredients.add(new Ingredient(0, "oregano"));
-		dIngredients.add(new Ingredient(0, "paprika"));
-		dIngredients.add(new Ingredient(0, "kecup"));
-		dIngredients.add(new Ingredient(0, "bazalka"));
-		dIngredients.add(new Ingredient(0, "horcica"));
-		
-		for (Ingredient ing : dIngredients) {
-			CheckBox cb0 = new CheckBox(ing.getName());  
-			cb0.setUserData(ing);
-			CustomMenuItem item0 = new CustomMenuItem(cb0); 
-			item0.setHideOnClick(false);  
-			containBox.getItems().add(item0);
-		}
-		
-		//Vlozenie ostatnych ingrediencii
-		//TODO vlozenie ostatnych ingrediencii z DB
-		/*for (Ingredients ing : DB ) {
-			String nameString = ing.getName();
-			CheckBox cb0 = new CheckBox(nameString);  
-			CustomMenuItem item0 = new CustomMenuItem(cb0); 
-			item0.setHideOnClick(false);  
-			containBox.getItems().add(item0);
-			cb0.setSelected(true);
-		}*/
-		
 		
 		saveBtn.setOnAction(e-> {
 			System.out.println("Changes saved!");

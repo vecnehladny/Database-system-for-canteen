@@ -3,6 +3,7 @@ package application;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.List;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -141,10 +142,73 @@ public class SQLConnector {
     	return user;
     }
     
-    public void updateUserDB(User u) {
+    public User getUserInDBByEmail(String email)
+    {
+    	EntityManager entityManager = ENTITY_MANAGER.createEntityManager();
+    	User user = null;
+    	
+    	try {
+    		String query = "SELECT u FROM User u WHERE u.email = :email"; 
+    		TypedQuery<User> typedQuery = entityManager.createQuery(query,User.class);
+    		typedQuery.setParameter("email",email);
+    		user = typedQuery.getSingleResult();
+    		
+    	} catch(Exception e) {
+    		e.printStackTrace();
+    	} finally {
+    		entityManager.close();
+    	}
+    	
+    	return user;
+    }
+    
+    public List<User> getSearchUsersInDB(String email, Paging f)
+    {
+    	EntityManager entityManager = ENTITY_MANAGER.createEntityManager();
+    	List<User> users = null;
+    	
+    	try {   		
+            int startFrom = (f.getPage() - 1) * (int)(f.getResultsPerPage());
+    		String query = "SELECT u FROM User u WHERE u.email LIKE :email ORDER BY u.id ASC"; 
+    		TypedQuery<User> typedQuery = entityManager.createQuery(query,User.class)
+    				.setFirstResult(startFrom).setMaxResults((int)f.getResultsPerPage());;
+    		typedQuery.setParameter("email","%"+email+"%");
+    		users = typedQuery.getResultList();
+    		    		
+    	} catch(Exception e) {
+    		e.printStackTrace();
+    	} finally {
+    		entityManager.close();
+    	}
+    	
+    	return users;
+    }
+    
+    public List<User> getUserListFromDB(Paging f) {
+    	EntityManager entityManager = ENTITY_MANAGER.createEntityManager();
+    	List<User> users = null;
+    	
+    	try {
+            int startFrom = (f.getPage() - 1) * (int)(f.getResultsPerPage());
+    		String query = "SELECT u FROM User u ORDER BY u.id ASC"; 
+    		TypedQuery<User> typedQuery = entityManager.createQuery(query,User.class)
+    				.setFirstResult(startFrom).setMaxResults((int)f.getResultsPerPage());;
+    		users = typedQuery.getResultList();
+    		    		
+    	} catch(Exception e) {
+    		e.printStackTrace();
+    	} finally {
+    		entityManager.close();
+    	}
+    	
+    	return users;
+    }
+    
+    public boolean updateUserDB(User u, boolean changePass) {
     	EntityManager entityManager = ENTITY_MANAGER.createEntityManager();
     	EntityTransaction entityTransaction = null;
     	User user = null;
+    	boolean result = true;
     	try {
     		entityTransaction = entityManager.getTransaction();
     		entityTransaction.begin();
@@ -153,6 +217,9 @@ public class SQLConnector {
     		user.setAddress(u.getAddress());
     		user.setName(u.getName());
     		user.setPriviledged(u.isPriviledged());
+    		if(changePass) {
+    			user.setPassword(u.getPassword());
+    		}
     		
     		entityManager.persist(user);
     		entityTransaction.commit();
@@ -161,12 +228,233 @@ public class SQLConnector {
     		if(entityTransaction !=null) {
     			entityTransaction.rollback();
     		}
+    		result = false;
     		e.printStackTrace();
     	}finally {
     		entityManager.close();
     	}
+    	
+    	return result;
     }
-
+    
+    public boolean removeUserFromDB(User u) {
+    	EntityManager entityManager = ENTITY_MANAGER.createEntityManager();
+    	EntityTransaction entityTransaction = null;
+    	User user = null;
+    	boolean result = true;
+    	try {
+    		entityTransaction = entityManager.getTransaction();
+    		entityTransaction.begin();
+    		
+    		user = entityManager.find(User.class, u.getId());
+    		entityManager.remove(user);
+    		entityTransaction.commit();
+    		
+    	}catch(Exception e) {
+    		if(entityTransaction !=null) {
+    			entityTransaction.rollback();
+    		}
+    		result = false;
+    		e.printStackTrace();
+    	}finally {
+    		entityManager.close();
+    	}
+    	
+    	return result;
+    }
+    
+    public List<Chef> getSearchChefsInDB(String name, Paging f)
+    {
+    	EntityManager entityManager = ENTITY_MANAGER.createEntityManager();
+    	List<Chef> chefs = null;
+    	
+    	try {   		
+            int startFrom = (f.getPage() - 1) * (int)(f.getResultsPerPage());
+    		String query = "SELECT ch FROM Chef ch WHERE ch.name LIKE :name ORDER BY ch.id ASC"; 
+    		TypedQuery<Chef> typedQuery = entityManager.createQuery(query,Chef.class)
+    				.setFirstResult(startFrom).setMaxResults((int)f.getResultsPerPage());;
+    		typedQuery.setParameter("name","%"+name+"%");
+    		chefs = typedQuery.getResultList();
+    		    		
+    	} catch(Exception e) {
+    		e.printStackTrace();
+    	} finally {
+    		entityManager.close();
+    	}
+    	
+    	return chefs;
+    }
+    
+    public List<Chef> getChefListFromDB(Paging f) {
+    	EntityManager entityManager = ENTITY_MANAGER.createEntityManager();
+    	List<Chef> chefs = null;
+    	
+    	try {
+            int startFrom = (f.getPage() - 1) * (int)(f.getResultsPerPage());
+    		String query = "SELECT ch FROM Chef ch ORDER BY ch.id ASC"; 
+    		TypedQuery<Chef> typedQuery = entityManager.createQuery(query,Chef.class)
+    				.setFirstResult(startFrom).setMaxResults((int)f.getResultsPerPage());;
+    		chefs = typedQuery.getResultList();
+    		    		
+    	} catch(Exception e) {
+    		e.printStackTrace();
+    	} finally {
+    		entityManager.close();
+    	}
+    	
+    	return chefs;
+    }
+    
+    public boolean updateChefDB(Chef ch) {
+    	EntityManager entityManager = ENTITY_MANAGER.createEntityManager();
+    	EntityTransaction entityTransaction = null;
+    	Chef chef = null;
+    	boolean result = true;
+    	try {
+    		entityTransaction = entityManager.getTransaction();
+    		entityTransaction.begin();
+    		
+    		chef = entityManager.find(Chef.class, ch.getId());
+    		chef.setName(ch.getName());
+    		
+    		entityManager.persist(chef);
+    		entityTransaction.commit();
+    		
+    	}catch(Exception e) {
+    		if(entityTransaction !=null) {
+    			entityTransaction.rollback();
+    		}
+    		result = false;
+    		e.printStackTrace();
+    	}finally {
+    		entityManager.close();
+    	}
+    	
+    	return result;
+    }
+    
+    public boolean removeChefFromDB(Chef ch) {
+    	EntityManager entityManager = ENTITY_MANAGER.createEntityManager();
+    	EntityTransaction entityTransaction = null;
+    	Chef chef = null;
+    	boolean result = true;
+    	try {
+    		entityTransaction = entityManager.getTransaction();
+    		entityTransaction.begin();
+    		
+    		chef = entityManager.find(Chef.class, ch.getId());
+    		entityManager.remove(chef);
+    		entityTransaction.commit();
+    		
+    	}catch(Exception e) {
+    		if(entityTransaction !=null) {
+    			entityTransaction.rollback();
+    		}
+    		result = false;
+    		e.printStackTrace();
+    	}finally {
+    		entityManager.close();
+    	}
+    	
+    	return result;
+    }
+    
+    public List<Ingredient> getSearchIngsInDB(String name, Paging f)
+    {
+    	EntityManager entityManager = ENTITY_MANAGER.createEntityManager();
+    	List<Ingredient> ingredients = null;    	
+    	try {  		   		
+            int startFrom = (f.getPage() - 1) * (int)(f.getResultsPerPage());
+    		String query = "SELECT i FROM Ingredient i WHERE i.name LIKE :name ORDER BY i.id ASC"; 
+    		TypedQuery<Ingredient> typedQuery = entityManager.createQuery(query,Ingredient.class)
+    				.setFirstResult(startFrom).setMaxResults((int)f.getResultsPerPage());
+    		typedQuery.setParameter("name","%"+name+"%");
+    		ingredients = typedQuery.getResultList();
+    		    		
+    	} catch(Exception e) {
+    		e.printStackTrace();
+    	} finally {
+    		entityManager.close();
+    	}
+    	
+    	return ingredients;
+    }
+    
+    public List<Ingredient> getIngredientListFromDB(Paging f){
+    	EntityManager entityManager = ENTITY_MANAGER.createEntityManager();
+    	List<Ingredient> ingredients = null;    	
+    	try {  		   		
+            int startFrom = (f.getPage() - 1) * (int)(f.getResultsPerPage());
+    		String query = "SELECT i FROM Ingredient i ORDER BY i.id ASC"; 
+    		TypedQuery<Ingredient> typedQuery = entityManager.createQuery(query,Ingredient.class)
+    				.setFirstResult(startFrom).setMaxResults((int)f.getResultsPerPage());
+    		ingredients = typedQuery.getResultList();
+    		    		
+    	} catch(Exception e) {
+    		e.printStackTrace();
+    	} finally {
+    		entityManager.close();
+    	}
+    	
+    	return ingredients;
+    }
+    
+    public boolean updateIngDB(Ingredient ing) {
+    	EntityManager entityManager = ENTITY_MANAGER.createEntityManager();
+    	EntityTransaction entityTransaction = null;
+    	Ingredient ingredient = null;
+    	boolean result = true;
+    	try {
+    		entityTransaction = entityManager.getTransaction();
+    		entityTransaction.begin();
+    		
+    		ingredient = entityManager.find(Ingredient.class, ing.getId());
+    		ingredient.setName(ing.getName());
+    		
+    		entityManager.persist(ingredient);
+    		entityTransaction.commit();
+    		
+    	}catch(Exception e) {
+    		if(entityTransaction !=null) {
+    			entityTransaction.rollback();
+    		}
+    		result = false;
+    		e.printStackTrace();
+    	}finally {
+    		entityManager.close();
+    	}
+    	
+    	return result;
+    }
+    
+    public boolean removeIngFromDB(Ingredient ing) {
+    	EntityManager entityManager = ENTITY_MANAGER.createEntityManager();
+    	EntityTransaction entityTransaction = null;
+    	Ingredient ingredient = null;
+    	boolean result = true;
+    	try {
+    		entityTransaction = entityManager.getTransaction();
+    		entityTransaction.begin();
+    		
+    		ingredient = entityManager.find(Ingredient.class, ing.getId());
+    		entityManager.remove(ingredient);
+    		entityTransaction.commit();
+    		
+    	}catch(Exception e) {
+    		if(entityTransaction !=null) {
+    			entityTransaction.rollback();
+    		}
+    		result = false;
+    		e.printStackTrace();
+    	}finally {
+    		entityManager.close();
+    	}
+    	
+    	return result;
+    }
+    
+    //Stop ORM functions
+    
     public ArrayList<FoodItem> getFoodListFromDB(Paging f){
         
         if(connection == null) {    return null;}
@@ -178,7 +466,7 @@ public class SQLConnector {
         try {
             connection.setAutoCommit(false);
             //zistim kolko je zaznamov v tabulke 
-            f.setNumberOfRecords(getRecordNumberFromDB("food"));
+            //f.setNumberOfRecords(getRecordNumberFromDB("food"));
 
             //Pocet stran na ktore rozdelim zaznamy
             f.setTotalPages(Math.ceil(f.getNumberOfRecords() / f.getResultsPerPage()));
@@ -237,7 +525,7 @@ public class SQLConnector {
         int startFrom = (p.getPage() - 1) * (int)(p.getResultsPerPage());
         ArrayList<FoodItem> list = new ArrayList<FoodItem>();
 
-        StringBuilder cmd = new StringBuilder("SELECT SQL_CALC_FOUND_ROWS f.ID, f.NAME, f.PRICE, ch.NAME, GROUP_CONCAT(i.name) as igroup FROM food f JOIN food_chef fc ON fc.FOOD_ID = f.ID JOIN chefs ch ON ch.ID = fc.CHEF_ID LEFT JOIN food_ingredients fi ON fi.FOOD_ID = f.ID LEFT JOIN ingredients i ON fi.INGREDIENTS_ID = i.ID ");
+        StringBuilder cmd = new StringBuilder("SELECT f.ID, f.NAME, f.PRICE, ch.NAME, GROUP_CONCAT(i.name) as igroup FROM food f JOIN food_chef fc ON fc.FOOD_ID = f.ID JOIN chefs ch ON ch.ID = fc.CHEF_ID LEFT JOIN food_ingredients fi ON fi.FOOD_ID = f.ID LEFT JOIN ingredients i ON fi.INGREDIENTS_ID = i.ID ");
         cmd.append("GROUP BY fc.ID ");
         cmd.append("HAVING f.PRICE <= " + f.getMaxPrice() + " ");
 
@@ -269,7 +557,7 @@ public class SQLConnector {
         try {
             connection.setAutoCommit(false);
             //zistim kolko je zaznamov v tabulke 
-            p.setNumberOfRecords(getRecordNumberFromDB("food"));
+            //p.setNumberOfRecords(getRecordNumberFromDB("food"));
 
             //Pocet stran na ktore rozdelim zaznamy
             p.setTotalPages(Math.ceil(p.getNumberOfRecords() / p.getResultsPerPage()));
@@ -306,17 +594,6 @@ public class SQLConnector {
             }
 
             resultSet.close();
-
-            preparedStatement = connection.prepareStatement("SELECT FOUND_ROWS() AS rowCount;");
-            resultSet = preparedStatement.executeQuery();
-
-            while(resultSet.next()){
-                double numberOfRec = resultSet.getInt(1);
-                p.setNumberOfRecords(numberOfRec);
-                System.out.println("---->"+numberOfRec);
-            }
-
-            resultSet.close();
             connection.commit();
             return list;
 
@@ -334,49 +611,6 @@ public class SQLConnector {
 
     }
 
-    public ArrayList<Chef> getChefListFromDB(ChefsVBoxController f){
-        
-        if(connection == null) {    return null;}
-
-        int startFrom = (f.getPage() - 1) * (int)(f.getResultsPerPage());
-        ArrayList<Chef> list = new ArrayList<Chef>();
-
-        try {
-            connection.setAutoCommit(false);
-            //zistim kolko je zaznamov v tabulke
-            f.setNumberOfRecords(getRecordNumberFromDB("chefs"));
-            
-            //Pocet stran na ktore rozdelim zaznamy
-            f.setTotalPages(Math.ceil(f.getNumberOfRecords() / f.getResultsPerPage()));
-
-            //vyberiem z tabulky potrebny pocet zaznamov na konkretnu stranu
-            preparedStatement = connection.prepareStatement("SELECT * FROM chefs ORDER BY ID ASC LIMIT ? , ?");
-            preparedStatement.setInt(1, startFrom);
-            preparedStatement.setInt(2, (int)(f.getResultsPerPage()));
-            resultSet = preparedStatement.executeQuery();
-
-            while(resultSet.next()){
-                int id = resultSet.getInt("ID");
-                String name = resultSet.getString("NAME");
-                
-                list.add(new Chef(id,name));
-            }
-            connection.commit();
-            return list;
-
-        } catch (SQLException e) {
-            System.out.println("Problem with loading chefs from database");
-            e.printStackTrace();
-            try{
-                if(connection != null)
-                    connection.rollback();
-            }catch(SQLException r){
-                System.out.println(r.getMessage());
-            }
-            return null;
-        }
-
-    }
 
     public int getRecordNumberFromDB(String table){
         if(connection == null) {return 0;}
@@ -475,97 +709,6 @@ public class SQLConnector {
                 String name = resultSet.getString(1);
                 
                 list.add(new Ingredient(name));
-            }
-            connection.commit();
-            return list;
-
-        } catch (SQLException e) {
-            System.out.println("Problem with loading Ingredients from database");
-            e.printStackTrace();
-            try{
-                if(connection != null)
-                    connection.rollback();
-            }catch(SQLException r){
-                System.out.println(r.getMessage());
-            }
-            return null;
-        }
-
-    }
-
-    public ArrayList<Ingredient> getIngredientListFromDB(Paging f){
-        
-        if(connection == null) {    return null;}
-
-        int startFrom = (f.getPage() - 1) * (int)(f.getResultsPerPage());
-        ArrayList<Ingredient> list = new ArrayList<Ingredient>();
-
-        try {
-            connection.setAutoCommit(false);
-            //zistim kolko je zaznamov v tabulke 
-            f.setNumberOfRecords(getRecordNumberFromDB("ingredients"));
-
-            //Pocet stran na ktore rozdelim zaznamy
-            f.setTotalPages(Math.ceil(f.getNumberOfRecords() / f.getResultsPerPage()));
-
-            //vyberiem z tabulky potrebny pocet zaznamov na stranu
-            preparedStatement = connection.prepareStatement("SELECT * from ingredients ORDER BY ID ASC LIMIT ?, ?");
-            preparedStatement.setInt(1, startFrom);
-            preparedStatement.setInt(2, (int)(f.getResultsPerPage()));
-            resultSet = preparedStatement.executeQuery();
-
-            while(resultSet.next()){
-                int id = resultSet.getInt(1);
-                String name = resultSet.getString(2);
-                
-                list.add(new Ingredient(id,name));
-            }
-            connection.commit();
-            return list;
-
-        } catch (SQLException e) {
-            System.out.println("Problem with loading Ingredients from database");
-            e.printStackTrace();
-            try{
-                if(connection != null)
-                    connection.rollback();
-            }catch(SQLException r){
-                System.out.println(r.getMessage());
-            }
-            return null;
-        }
-
-    }
-
-    public ArrayList<User> getUserListFromDB(Paging f){
-        
-        if(connection == null) {    return null;}
-
-        int startFrom = (f.getPage() - 1) * (int)(f.getResultsPerPage());
-        ArrayList<User> list = new ArrayList<User>();
-
-        try {
-            connection.setAutoCommit(false);
-            //zistim kolko je zaznamov v tabulke 
-            f.setNumberOfRecords(getRecordNumberFromDB("users"));
-
-            //Pocet stran na ktore rozdelim zaznamy
-            f.setTotalPages(Math.ceil(f.getNumberOfRecords() / f.getResultsPerPage()));
-
-            //vyberiem z tabulky potrebny pocet zaznamov na stranu
-            preparedStatement = connection.prepareStatement("SELECT * from users ORDER BY ID ASC LIMIT ?, ?");
-            preparedStatement.setInt(1, startFrom);
-            preparedStatement.setInt(2, (int)(f.getResultsPerPage()));
-            resultSet = preparedStatement.executeQuery();
-
-            while(resultSet.next()){
-                int id = resultSet.getInt(1);
-                String name = resultSet.getString(2);
-                String address = resultSet.getString(3);
-                String email = resultSet.getString(5);
-                boolean privileged = resultSet.getBoolean(6);
-                
-                list.add(new User(id,name,address,email,privileged));
             }
             connection.commit();
             return list;
