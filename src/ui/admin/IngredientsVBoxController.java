@@ -192,7 +192,11 @@ public class IngredientsVBoxController {
             {
             	System.out.println("Pressed delete");
             	if(connector.removeIngFromDB(ing)) {
-            		ingredientTableView.getItems().remove(ing);
+            		//ingredientTableView.getItems().remove(ing);
+    				if(!searching)
+    					updateIngredientsList();
+    				else
+    					updateIngListSearching();
             	}
             }
         }

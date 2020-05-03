@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -11,6 +12,7 @@ import application.MD5Hashing;
 import application.SQLConnector;
 import data.FoodItem;
 import data.Ingredient;
+import data.Order;
 import data.User;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
@@ -26,6 +28,7 @@ import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.PasswordField;
+import javafx.scene.control.TableColumn.SortType;
 import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
@@ -43,6 +46,7 @@ public class UserMenuController {
 
 	public Paging paging = new Paging(); 
 	User user;
+	SQLConnector connector = new SQLConnector();
 
 	@FXML Button profileButton;
 	@FXML Button foodButton;
@@ -67,6 +71,7 @@ public class UserMenuController {
 	
 	//Toto bude nas obsah kosiku.
 	List<FoodItem> orderItems = new ArrayList<>();
+	float price;
 	
 	//Zavola sa pri prepnuti sceny
 	public void initialize()
@@ -120,7 +125,11 @@ public class UserMenuController {
 			
 			createOrderButton.setOnAction(e->{
 				System.out.println("Order created");
-				//TODO tu by malo byt odoslanie do databazy
+				if(orderItems.size() <=0) {	return;}
+				Order order = new Order();
+				order.setCreatedTime(new Date());
+				order.setUser(user);
+				connector.addOrderToDB(order,orderItems,price);
 				loadFoodVBox();
 			});
 			
@@ -164,6 +173,10 @@ public class UserMenuController {
 			
 			CalculateCheckoutPrice();
 			
+			//Nastavenie poradia tabulky podla mena zostupne
+			orderTableView.getSortOrder().add(orderTableView.getColumns().get(0));
+			
+			
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -180,6 +193,7 @@ public class UserMenuController {
 			sum+=Float.valueOf(foodItem.getPrice());
 		}
 		priceLabel.setText(df.format(sum)+ " E");	
+		price=sum;
 	}
 	
 	public void loadProfileVBox()

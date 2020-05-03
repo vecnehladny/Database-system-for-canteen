@@ -10,6 +10,10 @@
         <!-- Define the object that should be persisted in the database -->
         <class>data.User</class>
         <class>data.Ingredient</class>
+        <class>data.FoodItem</class>
+        <class>data.Order</class>           
+        <class>data.FoodItem</class>       
+        <class>data.Bill</class>              
         <properties>
             <property name="javax.persistence.jdbc.driver" value="com.mysql.jdbc.Driver" />
             <property name="javax.persistence.jdbc.url" value="jdbc:mysql://localhost:3306/dbs_db?characterEncoding=latin1" />

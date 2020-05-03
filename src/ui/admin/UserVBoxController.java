@@ -197,7 +197,11 @@ public class UserVBoxController {
             {
             	System.out.println("Pressed delete");
             	if(connector.removeUserFromDB(user)) {
-            		userTableView.getItems().remove(user);
+            		//userTableView.getItems().remove(user);
+    				if(!searching)
+    					updateUsersList();
+    				else
+    					updateUsersListSearching();
             	}
             }
         }

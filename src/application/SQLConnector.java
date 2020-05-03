@@ -3,6 +3,7 @@ package application;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import javax.persistence.EntityManager;
@@ -21,9 +22,12 @@ import ui.Paging;
 import data.User;
 import ui.admin.ChefsVBoxController;
 import ui.admin.FoodVBoxController;
+import data.Bill;
 import data.Chef;
 import data.FoodItem;
+import data.FoodOrders;
 import data.Ingredient;
+import data.Order;
 
 //Tato classa sluzi na pripojenie k MySQL a vykonanie Queries
 public class SQLConnector {
@@ -451,6 +455,134 @@ public class SQLConnector {
     	}
     	
     	return result;
+    }
+    
+    public boolean addOrderToDB(Order order,List<FoodItem> orderItems, float price)
+    {
+    	EntityManager entityManager = ENTITY_MANAGER.createEntityManager();
+    	boolean result = true;
+    	EntityTransaction entityTransaction = null;
+    	
+    	try {
+    		entityTransaction = entityManager.getTransaction();
+    		entityTransaction.begin();
+    		
+    		//Vytvorenie objednavky
+    		entityManager.persist(order);
+    		
+    		//Vytvorenie faktury
+    		Bill bill = new Bill();    		
+    		bill.setOrder(order);
+    		bill.setPaid(false);
+    		bill.setPrice(price);
+    		entityManager.persist(bill);
+    		
+    		//Zoradenie jedal podla ID
+    		Collections.sort(orderItems);    	
+    		
+    		//Priradenie jedal k objednavke
+    		int count = 0;
+    		while(orderItems.size() > 0) {
+        		FoodItem fi=orderItems.get(0);
+    			count++;
+    			//Pocitanie rovnakych jedal
+        		if(orderItems.size() < 2 || fi.getId() != orderItems.get(1).getId()) {
+        			FoodOrders fo = new FoodOrders();
+        			fo.setCount(count);
+        			fo.setFood(fi);
+        			fo.setOrder(order);
+        			entityManager.persist(fo);
+        			count = 0;
+        		}
+        		orderItems.remove(0);
+    		}
+    		
+    		entityTransaction.commit();
+    		
+    	}catch(Exception e) {
+    		result = false;
+    		if(entityTransaction !=null) {
+    			entityTransaction.rollback();
+    		}
+    		e.printStackTrace();
+    	}finally {
+    		entityManager.close();
+    	}
+    	
+    	return result;
+    }
+    
+    public boolean removeOrderFromDB(Order o) {
+    	EntityManager entityManager = ENTITY_MANAGER.createEntityManager();
+    	EntityTransaction entityTransaction = null;
+    	Order order = null;
+    	boolean result = true;
+    	try {
+    		entityTransaction = entityManager.getTransaction();
+    		entityTransaction.begin();
+    		
+    		order = entityManager.find(Order.class, o.getId());
+    		entityManager.remove(order);
+    		entityTransaction.commit();
+    		
+    	}catch(Exception e) {
+    		if(entityTransaction !=null) {
+    			entityTransaction.rollback();
+    		}
+    		result = false;
+    		e.printStackTrace();
+    	}finally {
+    		entityManager.close();
+    	}
+    	
+    	return result;
+    }
+    
+    public boolean updateBillDB(Bill b) {
+    	EntityManager entityManager = ENTITY_MANAGER.createEntityManager();
+    	EntityTransaction entityTransaction = null;
+    	Bill bill = null;
+    	boolean result = true;
+    	try {
+    		entityTransaction = entityManager.getTransaction();
+    		entityTransaction.begin();
+    		
+    		bill = entityManager.find(Bill.class, b.getId());
+    		bill.setPaid(!b.isPaid());
+    		
+    		entityManager.persist(bill);
+    		entityTransaction.commit();
+    		
+    	}catch(Exception e) {
+    		if(entityTransaction !=null) {
+    			entityTransaction.rollback();
+    		}
+    		result = false;
+    		e.printStackTrace();
+    	}finally {
+    		entityManager.close();
+    	}
+    	
+    	return result;
+    }
+    
+    public List<Bill> getBillListFromDB(Paging f){
+    	EntityManager entityManager = ENTITY_MANAGER.createEntityManager();
+    	List<Bill> bills = null;    	
+    	try {  		   		
+            int startFrom = (f.getPage() - 1) * (int)(f.getResultsPerPage());
+    		String query = "SELECT b FROM Bill b ORDER BY b.id ASC"; 
+    		TypedQuery<Bill> typedQuery = entityManager.createQuery(query,Bill.class)
+    				.setFirstResult(startFrom).setMaxResults((int)f.getResultsPerPage());
+    		bills = typedQuery.getResultList();
+    		    		
+    	} catch(Exception e) {
+    		e.printStackTrace();
+    	} finally {
+    		entityManager.close();
+    	}
+    	
+    	return bills;
     }
     
     //Stop ORM functions

@@ -194,7 +194,11 @@ public class ChefsVBoxController{
             {
             	System.out.println("Pressed delete");
             	if(connector.removeChefFromDB(chef)) {
-            		chefsTableView.getItems().remove(chef);
+            		//chefsTableView.getItems().remove(chef);
+    				if(!searching)
+    					updateChefsList();
+    				else
+    					updateChefsListSearching();
             	}
             }
         }

@@ -3,6 +3,8 @@ package ui.admin;
 import java.io.IOException;
 import java.util.Optional;
 
+import application.SQLConnector;
+import data.Bill;
 import data.Order;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
@@ -24,11 +26,15 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import ui.Paging;
 
 public class OrderVBoxController {
 
 	@FXML Button orderFilterBtn,orderNextBtn,orderPreviousBtn;	
-	@FXML TableView<Order> orderTableView;
+	@FXML TableView<Bill> orderTableView;
+	
+	Paging paging = new Paging();
+	SQLConnector connector = new SQLConnector();
 	
 	public void initialize()
 	{
@@ -41,10 +47,12 @@ public class OrderVBoxController {
 		
 		//Pridat funckie next a previous - aby sme nezobrazili 1milion zaznamom naraz
 		orderNextBtn.setOnAction(e->{
-			System.out.println("Next btn pressed");
+			paging.incrementPage();
+			updateBillsList();
 		});
 		orderPreviousBtn.setOnAction(e->{
-			System.out.println("Previous btn pressed");
+			paging.decrementPage();
+			updateBillsList();
 		});
 		
 		//Vytvorenie moznosti pri kliku praveho tlacidla
@@ -60,28 +68,27 @@ public class OrderVBoxController {
 		orderTableView.getColumns().get(3).setCellValueFactory(new PropertyValueFactory<>("createdTime"));
 		
 		orderTableView.setRowFactory(e -> {
-			TableRow<Order> tRow = new TableRow<>();
+			TableRow<Bill> tRow = new TableRow<>();
 		    tRow.setOnMouseClicked(event -> {
 		    	
 		    	if(tRow.isEmpty())
 		    		return;	    	
-	            Order order = tRow.getItem();
+	            Bill bill = tRow.getItem();
 	            
-	            if(Boolean.valueOf(order.isPaid())) {
+	            if(Boolean.valueOf(bill.isPaid())) {
 	            	editMenu.setText("Set as not paid");
 	            }
 	            else {
 	            	editMenu.setText("Set as paid");
-				}          	
+				}          
 	            
 	            //Vybratie moznosti delete
 				deleteMenu.setOnAction(new EventHandler<ActionEvent>() {
 					
 					@Override
 					public void handle(ActionEvent event) {
-						System.out.println("Deleting! "+order.getCustomer());
-						showConfirmBox(order );
-						//TODO zmazat objednavku
+						System.out.println("Deleting! "+bill);
+						showConfirmBox(bill);
 					}
 				});
 				//Vybratie moznosti edit
@@ -89,10 +96,11 @@ public class OrderVBoxController {
 
 					@Override
 					public void handle(ActionEvent event) {
-						System.out.println("Editing! "+order.getCustomer());	
-						tRow.getItem().setPaid(!(Boolean.valueOf(order.isPaid())));
-						orderTableView.refresh();
-						//TODO: nastavit status zaplatenia na opacny
+						System.out.println("Editing! "+this);	
+						if(connector.updateBillDB(bill)) {
+							tRow.getItem().setPaid(!(Boolean.valueOf(bill.isPaid())));
+							orderTableView.refresh();
+						}
 					}
 				});
 		    	
@@ -100,24 +108,18 @@ public class OrderVBoxController {
 		    	
 		        if (event.getButton() == MouseButton.PRIMARY && event.getClickCount() == 2 && !tRow.isEmpty() ) {
 		            //TODO zobrazit info - treba to?
-		            System.out.println("ID OF CLICKED ORDER "+order.getId());		            
+		            System.out.println("ID OF CLICKED ORDER "+bill.getId());		            
 		        }
 		    });
 		    return tRow ;
 		});	
-		//TODO pridat nacitanie objednavok
-		
-		//Debug
-		orderTableView.getItems().add(new Order(18, "11.2.2020", true, 101, "Jozko Mrkvicka",null));
-		for(int i=1;i<1000;i++)
-		{
-			orderTableView.getItems().add(new Order(i, "11.2.2020", false, 101, "Jozko Mrkvicka",null));
-		}
+
+		updateBillsList();
 
 	}
 	
 	//Vytvara upozornenie pri mazani
-	private void showConfirmBox(Order order)
+	private void showConfirmBox(Bill bill)
 	{
 		Platform.runLater(() -> {
             ButtonType okay = new ButtonType("Delete");
@@ -130,11 +132,28 @@ public class OrderVBoxController {
             if(result.orElse(cancel) == okay)
             {
             	System.out.println("Pressed delete");
-            	orderTableView.getItems().remove(order);
-            	//TODO vymazat zaznam order
+            	if(connector.removeOrderFromDB(bill.getOrder())) {
+            		//orderTableView.getItems().remove(bill);
+            		updateBillsList();
+            	}
             }
         }
 		);
+	}
+	
+	public void updateBillsList() {
+		orderNextBtn.setDisable(false);
+		orderPreviousBtn.setDisable(false);
+				
+		orderTableView.getItems().clear();
+		orderTableView.getItems().addAll(connector.getBillListFromDB(paging));
+		
+		if(orderTableView.getItems().size() < paging.getResultsPerPage()) {
+			orderNextBtn.setDisable(true);
+		}
+		if(paging.getPage() <=1) {
+			orderPreviousBtn.setDisable(true);
+		}
 	}
 	
 	public void setFilter()
