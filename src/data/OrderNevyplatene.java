@@ -2,25 +2,25 @@ package data;
 
 public class OrderNevyplatene {
 
-    public int count;
-	public double price;
-	public String name;
+    public int Count;
+	public double Price;
+	public String Name;
     
     public OrderNevyplatene(String name, double price, int count){
-        this.name = name;
-        this.price = price;
-        this.count = count;
+        this.Name = name;
+        this.Price = price;
+        this.Count = count;
     }
 
-    public int getcount(){
-        return count;
+    public int getCount(){
+        return Count;
     }
 
-    public String getname(){
-        return name;
+    public String getName(){
+        return Name;
     }
 
-    public double getprice(){
-        return price;
+    public double getPrice(){
+        return Price;
     }
 }

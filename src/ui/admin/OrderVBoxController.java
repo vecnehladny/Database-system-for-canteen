@@ -269,8 +269,7 @@ class OrderNevyplateneController
 		if (connector.isConnectedToDB()) {
 			ArrayList<OrderNevyplatene> list = connector.getBillListFromDlzniciDB();
 
-			//orderNevyplateneView.getItems().addAll(list);
-			orderNevyplateneView.getItems().add(new OrderNevyplatene("ahoj", 20.8, 7));
+			orderNevyplateneView.getItems().addAll(list);
 		}
 		connector.closeConnection();
 		
