@@ -74,6 +74,7 @@
             <Insets left="225.0" top="10.0" />
          </VBox.margin>
       </TextField>
+      
       <Button fx:id="filterButton" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#saveChanges" prefHeight="30.0" prefWidth="150.0" text="USE FILTER">
          <VBox.margin>
             <Insets left="225.0" top="60.0" />

@@ -28,6 +28,7 @@ import data.FoodItem;
 import data.FoodOrders;
 import data.Ingredient;
 import data.Order;
+import data.OrderNevyplatene;
 
 //Tato classa sluzi na pripojenie k MySQL a vykonanie Queries
 public class SQLConnector {
@@ -37,7 +38,7 @@ public class SQLConnector {
     private ResultSet resultSet = null;
    
     private String username = "root";
-    private String password = "root";
+    private String password = "infernoinferno";
     
     private static EntityManagerFactory ENTITY_MANAGER = Persistence.createEntityManagerFactory("MyEntManager");
        
@@ -585,7 +586,42 @@ public class SQLConnector {
     	return bills;
     }
     
-    //Stop ORM functions
+	//Stop ORM functions
+	
+	public ArrayList<OrderNevyplatene> getBillListFromDlzniciDB(){
+		if(connection == null) {    return null;}
+		
+        ArrayList<OrderNevyplatene> list = new ArrayList<OrderNevyplatene>();
+
+        try {
+            connection.setAutoCommit(false);
+            
+            
+            preparedStatement = connection.prepareStatement("SELECT res.`NAME`, res.NOTPAIDCOUNT, res.FINALPRICE FROM(SELECT b.PAID, u.`NAME`, SUM(b.PRICE) AS FINALPRICE, COUNT(*) AS NOTPAIDCOUNT FROM bill AS b JOIN orders AS o ON o.ID = b.ORDER_ID JOIN users AS u ON u.ID = o.USER_ID GROUP BY b.PAID, u.`NAME` HAVING b.PAID = 0) AS res ORDER BY res.FINALPRICE DESC LIMIT 0, 12");
+            resultSet = preparedStatement.executeQuery();
+
+            while(resultSet.next()){
+				String name = resultSet.getString(1);
+				int count = resultSet.getInt(2);
+				double price = resultSet.getDouble(3);
+				
+				list.add(new OrderNevyplatene(name,price,count));
+            }
+            connection.commit();
+            return list;
+
+        } catch (SQLException e) {
+            System.out.println("Problem with loading list from database");
+            e.printStackTrace();
+            try{
+                if(connection != null)
+                    connection.rollback();
+            }catch(SQLException r){
+                System.out.println(r.getMessage());
+            }
+            return null;
+        }
+    }
     
     public ArrayList<FoodItem> getFoodListFromDB(Paging f){
         

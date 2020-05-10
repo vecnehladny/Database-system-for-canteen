@@ -1,11 +1,13 @@
 package ui.admin;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Optional;
 
 import application.SQLConnector;
 import data.Bill;
 import data.Order;
+import data.OrderNevyplatene;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -30,7 +32,7 @@ import ui.Paging;
 
 public class OrderVBoxController {
 
-	@FXML Button orderFilterBtn,orderNextBtn,orderPreviousBtn;	
+	@FXML Button orderFilterBtn,orderNextBtn,orderPreviousBtn,orderNajviacObjBtn;	
 	@FXML TableView<Bill> orderTableView;
 	
 	Paging paging = new Paging();
@@ -53,6 +55,11 @@ public class OrderVBoxController {
 		orderPreviousBtn.setOnAction(e->{
 			paging.decrementPage();
 			updateBillsList();
+		});
+
+		orderNajviacObjBtn.setOnAction(e->{
+			System.out.println("Loading most orders");
+			openOrderNevyplateneWindow();
 		});
 		
 		//Vytvorenie moznosti pri kliku praveho tlacidla
@@ -155,8 +162,8 @@ public class OrderVBoxController {
 			orderPreviousBtn.setDisable(true);
 		}
 	}
-	
-	public void setFilter()
+
+		public void setFilter()
 	{
 		//TODO Aplikovanie filtra na order
 	}
@@ -185,6 +192,30 @@ public class OrderVBoxController {
 			e.printStackTrace();
 		}
 	}
+
+	public void openOrderNevyplateneWindow(){
+		try {
+			FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/admin/OrderNevyplatene.fxml"));
+			OrderNevyplateneController orderNevyplateneController = new OrderNevyplateneController();
+			loader.setController(orderNevyplateneController);
+			VBox root = loader.load();
+			Scene scene = new Scene(root);
+			Stage primaryStage = new Stage();
+			primaryStage.setScene(scene);
+			primaryStage.setResizable(false);
+			primaryStage.setTitle("Nevyplatene");
+			// Nastavuje prioritu. Neda sa vratit naspat dokial nezavru toto okno
+			primaryStage.initModality(Modality.APPLICATION_MODAL);
+			primaryStage.show();
+
+			orderNevyplateneController.init(this, primaryStage);
+			// Nastavenie referencie aby sa dal uplatnit filter
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
 	
 }
 
@@ -208,5 +239,40 @@ class OrderFilterController
 	{
 		orderVBoxController.setFilter();
 		stage.close();
+	}
+}
+
+class OrderNevyplateneController 
+{
+	OrderVBoxController orderVBoxController;
+	Stage stage;
+	@FXML TableView<OrderNevyplatene> orderNevyplateneView;
+	
+	public void init(OrderVBoxController orderVBoxController, Stage stage) {
+		this.stage = stage;
+		this.orderVBoxController = orderVBoxController;
+	}
+
+	@FXML
+	public void initialize(){
+		System.out.println("initialize() OrderNevyplateneController");
+		orderNevyplateneView.getColumns().get(0).setCellValueFactory(new PropertyValueFactory<>("name"));
+		orderNevyplateneView.getColumns().get(1).setCellValueFactory(new PropertyValueFactory<>("count"));
+		orderNevyplateneView.getColumns().get(2).setCellValueFactory(new PropertyValueFactory<>("price"));
+
+		napln();
+	}
+
+	public void napln() {
+		SQLConnector connector = new SQLConnector();
+		connector.connectToDB();
+		if (connector.isConnectedToDB()) {
+			ArrayList<OrderNevyplatene> list = connector.getBillListFromDlzniciDB();
+
+			//orderNevyplateneView.getItems().addAll(list);
+			orderNevyplateneView.getItems().add(new OrderNevyplatene("ahoj", 20.8, 7));
+		}
+		connector.closeConnection();
+		
 	}
 }
